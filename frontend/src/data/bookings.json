@@ -1,0 +1,127 @@
+[
+  {
+    "id": "bk1",
+    "userId": "u1",
+    "slot": {
+      "id": "s1-6", "venueId": "v1", "branchId": "b1a", "name": "Evening Session",
+      "startTime": "18:00", "endTime": "19:00", "durationMinutes": 60,
+      "basePrice": 1800, "maxCapacity": 11, "isActive": true
+    },
+    "venue": {
+      "id": "v1", "name": "City Cricket Arena", "slug": "city-cricket-arena",
+      "area": "Gulshan", "city": "Dhaka",
+      "coverImage": "https://images.unsplash.com/photo-1540747913346-19212a4b177b?w=400&q=80"
+    },
+    "branchId": "b1a",
+    "bookingDate": "2026-04-10",
+    "startTime": "18:00",
+    "endTime": "19:00",
+    "status": "confirmed",
+    "totalAmount": 1800,
+    "paymentStatus": "paid",
+    "paymentMethod": "sslcommerz",
+    "qrToken": "qr-token-bk1",
+    "notes": null,
+    "createdAt": "2026-04-05T10:00:00Z"
+  },
+  {
+    "id": "bk2",
+    "userId": "u1",
+    "slot": {
+      "id": "s2-6", "venueId": "v2", "branchId": "b2a", "name": "Evening Court",
+      "startTime": "17:00", "endTime": "18:00", "durationMinutes": 60,
+      "basePrice": 900, "maxCapacity": 4, "isActive": true
+    },
+    "venue": {
+      "id": "v2", "name": "ProBadminton Club", "slug": "probadminton-club",
+      "area": "Dhanmondi", "city": "Dhaka",
+      "coverImage": "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&q=80"
+    },
+    "branchId": "b2a",
+    "bookingDate": "2026-04-12",
+    "startTime": "17:00",
+    "endTime": "18:00",
+    "status": "confirmed",
+    "totalAmount": 900,
+    "paymentStatus": "paid",
+    "paymentMethod": "wallet",
+    "qrToken": "qr-token-bk2",
+    "notes": "Need 2 extra shuttlecocks",
+    "createdAt": "2026-04-04T14:30:00Z"
+  },
+  {
+    "id": "bk3",
+    "userId": "u1",
+    "slot": {
+      "id": "s3-4", "venueId": "v3", "branchId": "b3a", "name": "Evening Pitch",
+      "startTime": "18:00", "endTime": "19:00", "durationMinutes": 60,
+      "basePrice": 1400, "maxCapacity": 14, "isActive": true
+    },
+    "venue": {
+      "id": "v3", "name": "FutsalPlex Banani", "slug": "futsalplex-banani",
+      "area": "Banani", "city": "Dhaka",
+      "coverImage": "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=400&q=80"
+    },
+    "branchId": "b3a",
+    "bookingDate": "2026-03-20",
+    "startTime": "18:00",
+    "endTime": "19:00",
+    "status": "completed",
+    "totalAmount": 1400,
+    "paymentStatus": "paid",
+    "paymentMethod": "sslcommerz",
+    "qrToken": "qr-token-bk3",
+    "notes": null,
+    "createdAt": "2026-03-18T09:00:00Z"
+  },
+  {
+    "id": "bk4",
+    "userId": "u1",
+    "slot": {
+      "id": "s1-4", "venueId": "v1", "branchId": "b1a", "name": "Afternoon Session",
+      "startTime": "14:00", "endTime": "15:00", "durationMinutes": 60,
+      "basePrice": 1500, "maxCapacity": 11, "isActive": true
+    },
+    "venue": {
+      "id": "v1", "name": "City Cricket Arena", "slug": "city-cricket-arena",
+      "area": "Gulshan", "city": "Dhaka",
+      "coverImage": "https://images.unsplash.com/photo-1540747913346-19212a4b177b?w=400&q=80"
+    },
+    "branchId": "b1a",
+    "bookingDate": "2026-03-10",
+    "startTime": "14:00",
+    "endTime": "15:00",
+    "status": "cancelled",
+    "totalAmount": 1500,
+    "paymentStatus": "refunded",
+    "paymentMethod": "wallet",
+    "qrToken": null,
+    "notes": null,
+    "createdAt": "2026-03-08T11:00:00Z"
+  },
+  {
+    "id": "bk5",
+    "userId": "u1",
+    "slot": {
+      "id": "s2-1", "venueId": "v2", "branchId": "b2a", "name": "Morning Court",
+      "startTime": "07:00", "endTime": "08:00", "durationMinutes": 60,
+      "basePrice": 600, "maxCapacity": 4, "isActive": true
+    },
+    "venue": {
+      "id": "v2", "name": "ProBadminton Club", "slug": "probadminton-club",
+      "area": "Dhanmondi", "city": "Dhaka",
+      "coverImage": "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&q=80"
+    },
+    "branchId": "b2a",
+    "bookingDate": "2026-04-15",
+    "startTime": "07:00",
+    "endTime": "08:00",
+    "status": "pending",
+    "totalAmount": 600,
+    "paymentStatus": "unpaid",
+    "paymentMethod": null,
+    "qrToken": null,
+    "notes": null,
+    "createdAt": "2026-04-05T08:00:00Z"
+  }
+]

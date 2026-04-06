@@ -1,0 +1,198 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: BookMyIndoor
+      - generic [ref=e7]:
+        - link "Home" [ref=e8] [cursor=pointer]:
+          - /url: "#"
+        - link "Bookings" [ref=e9] [cursor=pointer]:
+          - /url: "#"
+        - link "Wallet" [ref=e10] [cursor=pointer]:
+          - /url: "#"
+        - link "Profile" [ref=e11] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=e12]:
+      - button [ref=e13] [cursor=pointer]:
+        - img [ref=e14]
+      - button [ref=e16] [cursor=pointer]:
+        - img [ref=e17]
+      - generic [ref=e20]: "N"
+  - generic [ref=e23]:
+    - heading "Find Your Perfect Slot Near You" [level=1] [ref=e24]:
+      - text: Find Your
+      - text: Perfect Slot
+      - text: Near You
+    - generic [ref=e25]:
+      - generic [ref=e26]:
+        - img [ref=e27]
+        - textbox "What sport?" [ref=e29]
+      - generic [ref=e30]:
+        - img [ref=e31]
+        - textbox [ref=e33]
+      - generic [ref=e34]:
+        - img [ref=e35]
+        - textbox "Where?" [ref=e38]
+      - button "Search" [ref=e40] [cursor=pointer]
+  - generic [ref=e41]:
+    - paragraph [ref=e42]: The Arena Selection
+    - generic [ref=e43]:
+      - heading "Featured Categories" [level=2] [ref=e44]
+      - link "Explore All" [ref=e45] [cursor=pointer]:
+        - /url: "#"
+        - text: Explore All
+        - img [ref=e46]
+    - generic [ref=e48]:
+      - generic [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]: 🏏
+        - generic [ref=e52]: Cricket
+      - generic [ref=e54] [cursor=pointer]:
+        - generic [ref=e55]: 🏸
+        - generic [ref=e56]: Badminton
+      - generic [ref=e58] [cursor=pointer]:
+        - generic [ref=e59]: ⚽
+        - generic [ref=e60]: Futsal
+      - generic [ref=e62] [cursor=pointer]:
+        - generic [ref=e63]: 🧘
+        - generic [ref=e64]: Yoga
+  - generic [ref=e66]:
+    - complementary [ref=e67]:
+      - generic [ref=e68]:
+        - heading "Filters" [level=3] [ref=e69]:
+          - img [ref=e70]
+          - text: Filters
+        - generic [ref=e72]:
+          - paragraph [ref=e73]: Sport Type
+          - generic [ref=e74] [cursor=pointer]:
+            - checkbox "Badminton" [checked] [ref=e75]
+            - generic [ref=e76]: Badminton
+          - generic [ref=e77] [cursor=pointer]:
+            - checkbox "Cricket" [ref=e78]
+            - generic [ref=e79]: Cricket
+          - generic [ref=e80] [cursor=pointer]:
+            - checkbox "Yoga" [ref=e81]
+            - generic [ref=e82]: Yoga
+        - generic [ref=e83]:
+          - paragraph [ref=e84]: Price Range
+          - slider [ref=e85]: "3000"
+          - generic [ref=e86]:
+            - generic [ref=e87]: Min
+            - generic [ref=e88]: Max
+        - generic [ref=e89]:
+          - paragraph [ref=e90]: Amenities
+          - generic [ref=e91] [cursor=pointer]:
+            - checkbox "Air Conditioned" [ref=e92]
+            - generic [ref=e93]: Air Conditioned
+          - generic [ref=e94] [cursor=pointer]:
+            - checkbox "Free Parking" [ref=e95]
+            - generic [ref=e96]: Free Parking
+          - generic [ref=e97] [cursor=pointer]:
+            - checkbox "Shower Room" [ref=e98]
+            - generic [ref=e99]: Shower Room
+      - generic [ref=e100]:
+        - paragraph [ref=e101]: Pro Pass
+        - paragraph [ref=e102]: Get 20% off on all weekend bookings with our new membership.
+        - button "Join Now" [ref=e103] [cursor=pointer]
+    - generic [ref=e104]:
+      - generic [ref=e105]:
+        - paragraph [ref=e106]: Showing 129 venues in Dhaka
+        - generic [ref=e107]:
+          - button [ref=e108] [cursor=pointer]:
+            - img [ref=e109]
+          - button [ref=e111] [cursor=pointer]:
+            - img [ref=e112]
+      - generic [ref=e114]:
+        - generic [ref=e115] [cursor=pointer]:
+          - generic [ref=e116]:
+            - img "Velocity Indoor Stadium" [ref=e117]
+            - generic [ref=e118]: OPEN
+            - generic [ref=e119]:
+              - img [ref=e120]
+              - text: "4.8"
+          - generic [ref=e122]:
+            - generic [ref=e123]:
+              - heading "Velocity Indoor Stadium" [level=3] [ref=e124]
+              - generic [ref=e125]: ৳1,300/hr
+            - paragraph [ref=e126]:
+              - img [ref=e127]
+              - text: Dhanmondi, 1.3km away
+            - generic [ref=e130]:
+              - generic [ref=e131]: AC
+              - generic [ref=e132]: Parking
+              - generic [ref=e133]: More
+            - button "Book Now" [ref=e134]
+        - generic [ref=e135] [cursor=pointer]:
+          - generic [ref=e136]:
+            - img "The Arena Hub" [ref=e137]
+            - generic [ref=e138]: FEATURED
+            - generic [ref=e139]:
+              - img [ref=e140]
+              - text: "4.5"
+          - generic [ref=e142]:
+            - generic [ref=e143]:
+              - heading "The Arena Hub" [level=3] [ref=e144]
+              - generic [ref=e145]: ৳800/hr
+            - paragraph [ref=e146]:
+              - img [ref=e147]
+              - text: Mirpur, 3.1km away
+            - generic [ref=e150]:
+              - generic [ref=e151]: Free Parking
+              - generic [ref=e152]: Shower
+            - button "Book Now" [ref=e153]
+        - generic [ref=e154] [cursor=pointer]:
+          - generic [ref=e155]:
+            - img "Zenith Yoga Studio" [ref=e156]
+            - generic [ref=e157]: OPEN
+            - generic [ref=e158]:
+              - img [ref=e159]
+              - text: "4.9"
+          - generic [ref=e161]:
+            - generic [ref=e162]:
+              - heading "Zenith Yoga Studio" [level=3] [ref=e163]
+              - generic [ref=e164]: ৳1,500/hr
+            - paragraph [ref=e165]:
+              - img [ref=e166]
+              - text: Gulshan 2, 1km away
+            - generic [ref=e169]:
+              - generic [ref=e170]: AC
+              - generic [ref=e171]: Dance Mirror
+            - button "Book Now" [ref=e172]
+        - generic [ref=e173] [cursor=pointer]:
+          - generic [ref=e174]:
+            - img "Smash Cricket Turf" [ref=e175]
+            - generic [ref=e176]: OPEN
+            - generic [ref=e177]:
+              - img [ref=e178]
+              - text: "4.3"
+          - generic [ref=e180]:
+            - generic [ref=e181]:
+              - heading "Smash Cricket Turf" [level=3] [ref=e182]
+              - generic [ref=e183]: ৳950/hr
+            - paragraph [ref=e184]:
+              - img [ref=e185]
+              - text: Uttara, 5.0km away
+            - generic [ref=e188]:
+              - generic [ref=e189]: Parking
+              - generic [ref=e190]: Cafeteria
+            - button "Book Now" [ref=e191]
+      - button "Show More Venues" [ref=e193] [cursor=pointer]
+  - contentinfo [ref=e194]:
+    - generic [ref=e195]:
+      - generic [ref=e196]:
+        - paragraph [ref=e197]: BookMyIndoor
+        - paragraph [ref=e198]: © 2024 BookMyIndoor. All rights reserved.
+      - generic [ref=e199]:
+        - link "Support" [ref=e200] [cursor=pointer]:
+          - /url: "#"
+        - link "Privacy Policy" [ref=e201] [cursor=pointer]:
+          - /url: "#"
+        - link "Terms of Service" [ref=e202] [cursor=pointer]:
+          - /url: "#"
+        - link "Partner with Us" [ref=e203] [cursor=pointer]:
+          - /url: "#"
+      - generic [ref=e204]:
+        - link [ref=e205] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e206]
+        - link [ref=e208] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e209]

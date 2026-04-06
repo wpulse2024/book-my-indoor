@@ -1,0 +1,29 @@
+{
+  "v1": [
+    { "id": "s1-1", "venueId": "v1", "branchId": "b1a", "name": "Morning Session", "startTime": "06:00", "endTime": "07:00", "durationMinutes": 60, "basePrice": 1200, "maxCapacity": 11, "isActive": true, "available": true, "effectivePrice": 1200 },
+    { "id": "s1-2", "venueId": "v1", "branchId": "b1a", "name": "Morning Session", "startTime": "07:00", "endTime": "08:00", "durationMinutes": 60, "basePrice": 1200, "maxCapacity": 11, "isActive": true, "available": true, "effectivePrice": 1200 },
+    { "id": "s1-3", "venueId": "v1", "branchId": "b1a", "name": "Morning Session", "startTime": "08:00", "endTime": "09:00", "durationMinutes": 60, "basePrice": 1200, "maxCapacity": 11, "isActive": true, "available": false, "effectivePrice": 1200 },
+    { "id": "s1-4", "venueId": "v1", "branchId": "b1a", "name": "Afternoon Session", "startTime": "14:00", "endTime": "15:00", "durationMinutes": 60, "basePrice": 1500, "maxCapacity": 11, "isActive": true, "available": true, "effectivePrice": 1500, "pricingRule": "peak" },
+    { "id": "s1-5", "venueId": "v1", "branchId": "b1a", "name": "Afternoon Session", "startTime": "15:00", "endTime": "16:00", "durationMinutes": 60, "basePrice": 1500, "maxCapacity": 11, "isActive": true, "available": true, "effectivePrice": 1500, "pricingRule": "peak" },
+    { "id": "s1-6", "venueId": "v1", "branchId": "b1a", "name": "Evening Session", "startTime": "18:00", "endTime": "19:00", "durationMinutes": 60, "basePrice": 1800, "maxCapacity": 11, "isActive": true, "available": true, "effectivePrice": 1800, "pricingRule": "peak" },
+    { "id": "s1-7", "venueId": "v1", "branchId": "b1a", "name": "Evening Session", "startTime": "19:00", "endTime": "20:00", "durationMinutes": 60, "basePrice": 1800, "maxCapacity": 11, "isActive": true, "available": false, "effectivePrice": 1800, "pricingRule": "peak" },
+    { "id": "s1-8", "venueId": "v1", "branchId": "b1a", "name": "Evening Session", "startTime": "20:00", "endTime": "21:00", "durationMinutes": 60, "basePrice": 1800, "maxCapacity": 11, "isActive": true, "available": true, "effectivePrice": 1800, "pricingRule": "peak" }
+  ],
+  "v2": [
+    { "id": "s2-1", "venueId": "v2", "branchId": "b2a", "name": "Morning Court", "startTime": "07:00", "endTime": "08:00", "durationMinutes": 60, "basePrice": 600, "maxCapacity": 4, "isActive": true, "available": true, "effectivePrice": 600 },
+    { "id": "s2-2", "venueId": "v2", "branchId": "b2a", "name": "Morning Court", "startTime": "08:00", "endTime": "09:00", "durationMinutes": 60, "basePrice": 600, "maxCapacity": 4, "isActive": true, "available": true, "effectivePrice": 600 },
+    { "id": "s2-3", "venueId": "v2", "branchId": "b2a", "name": "Morning Court", "startTime": "09:00", "endTime": "10:00", "durationMinutes": 60, "basePrice": 600, "maxCapacity": 4, "isActive": true, "available": false, "effectivePrice": 600 },
+    { "id": "s2-4", "venueId": "v2", "branchId": "b2a", "name": "Afternoon Court", "startTime": "13:00", "endTime": "14:00", "durationMinutes": 60, "basePrice": 700, "maxCapacity": 4, "isActive": true, "available": true, "effectivePrice": 700 },
+    { "id": "s2-5", "venueId": "v2", "branchId": "b2a", "name": "Afternoon Court", "startTime": "14:00", "endTime": "15:00", "durationMinutes": 60, "basePrice": 700, "maxCapacity": 4, "isActive": true, "available": true, "effectivePrice": 700 },
+    { "id": "s2-6", "venueId": "v2", "branchId": "b2a", "name": "Evening Court", "startTime": "17:00", "endTime": "18:00", "durationMinutes": 60, "basePrice": 900, "maxCapacity": 4, "isActive": true, "available": true, "effectivePrice": 900, "pricingRule": "peak" },
+    { "id": "s2-7", "venueId": "v2", "branchId": "b2a", "name": "Evening Court", "startTime": "18:00", "endTime": "19:00", "durationMinutes": 60, "basePrice": 900, "maxCapacity": 4, "isActive": true, "available": false, "effectivePrice": 900, "pricingRule": "peak" },
+    { "id": "s2-8", "venueId": "v2", "branchId": "b2a", "name": "Evening Court", "startTime": "19:00", "endTime": "20:00", "durationMinutes": 60, "basePrice": 900, "maxCapacity": 4, "isActive": true, "available": true, "effectivePrice": 900, "pricingRule": "peak" }
+  ],
+  "v3": [
+    { "id": "s3-1", "venueId": "v3", "branchId": "b3a", "name": "Morning Pitch", "startTime": "06:00", "endTime": "07:00", "durationMinutes": 60, "basePrice": 800, "maxCapacity": 14, "isActive": true, "available": true, "effectivePrice": 800 },
+    { "id": "s3-2", "venueId": "v3", "branchId": "b3a", "name": "Morning Pitch", "startTime": "07:00", "endTime": "08:00", "durationMinutes": 60, "basePrice": 800, "maxCapacity": 14, "isActive": true, "available": false, "effectivePrice": 800 },
+    { "id": "s3-3", "venueId": "v3", "branchId": "b3a", "name": "Afternoon Pitch", "startTime": "14:00", "endTime": "15:00", "durationMinutes": 60, "basePrice": 1000, "maxCapacity": 14, "isActive": true, "available": true, "effectivePrice": 1000 },
+    { "id": "s3-4", "venueId": "v3", "branchId": "b3a", "name": "Evening Pitch", "startTime": "18:00", "endTime": "19:00", "durationMinutes": 60, "basePrice": 1400, "maxCapacity": 14, "isActive": true, "available": true, "effectivePrice": 1400, "pricingRule": "peak" },
+    { "id": "s3-5", "venueId": "v3", "branchId": "b3a", "name": "Evening Pitch", "startTime": "19:00", "endTime": "20:00", "durationMinutes": 60, "basePrice": 1400, "maxCapacity": 14, "isActive": true, "available": true, "effectivePrice": 1400, "pricingRule": "peak" }
+  ]
+}

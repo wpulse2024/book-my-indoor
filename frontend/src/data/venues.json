@@ -1,0 +1,228 @@
+[
+  {
+    "id": "v1",
+    "tenantId": "t1",
+    "name": "City Cricket Arena",
+    "slug": "city-cricket-arena",
+    "address": "House 12, Road 6, Gulshan-1",
+    "lat": 23.7947,
+    "lng": 90.4142,
+    "city": "Dhaka",
+    "area": "Gulshan",
+    "type": "cricket_turf",
+    "description": "A premium indoor cricket turf with professional-grade pitches, floodlights, and top-tier equipment. Perfect for corporate matches, practice sessions, and weekend leagues. Fully air-conditioned with changing rooms and cafeteria.",
+    "coverImage": "https://images.unsplash.com/photo-1540747913346-19212a4b177b?w=800&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1540747913346-19212a4b177b?w=800&q=80",
+      "https://images.unsplash.com/photo-1593766788306-28561086694e?w=800&q=80",
+      "https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?w=800&q=80"
+    ],
+    "amenities": ["parking", "changing_room", "cafeteria", "lighting", "ac", "equipment_rental"],
+    "rating": 4.8,
+    "reviewCount": 124,
+    "isActive": true,
+    "branches": [
+      { "id": "b1a", "name": "Gulshan Branch", "address": "House 12, Road 6, Gulshan-1", "lat": 23.7947, "lng": 90.4142, "phone": "+8801711000001" },
+      { "id": "b1b", "name": "Banani Branch", "address": "Road 11, Block F, Banani", "lat": 23.7937, "lng": 90.4021, "phone": "+8801711000002" }
+    ],
+    "distanceKm": 1.2,
+    "lowestPrice": 1200,
+    "createdAt": "2023-06-01T00:00:00Z"
+  },
+  {
+    "id": "v2",
+    "tenantId": "t2",
+    "name": "ProBadminton Club",
+    "slug": "probadminton-club",
+    "address": "Plot 5, Road 2, Dhanmondi",
+    "lat": 23.7461,
+    "lng": 90.3742,
+    "city": "Dhaka",
+    "area": "Dhanmondi",
+    "type": "badminton",
+    "description": "State-of-the-art badminton facility with 6 international-standard courts. Non-slip wooden flooring, professional lighting, and a dedicated coaching area. Monthly memberships and coaching packages available.",
+    "coverImage": "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80",
+      "https://images.unsplash.com/photo-1597075095600-c2c8e3fd8c6e?w=800&q=80"
+    ],
+    "amenities": ["parking", "shower", "changing_room", "lighting", "equipment_rental"],
+    "rating": 4.6,
+    "reviewCount": 89,
+    "isActive": true,
+    "branches": [
+      { "id": "b2a", "name": "Dhanmondi Branch", "address": "Plot 5, Road 2, Dhanmondi", "lat": 23.7461, "lng": 90.3742, "phone": "+8801711000003" }
+    ],
+    "distanceKm": 3.5,
+    "lowestPrice": 600,
+    "createdAt": "2023-07-15T00:00:00Z"
+  },
+  {
+    "id": "v3",
+    "tenantId": "t3",
+    "name": "FutsalPlex Banani",
+    "slug": "futsalplex-banani",
+    "address": "Level 3, Sports Complex, Road 17, Banani",
+    "lat": 23.7937,
+    "lng": 90.4021,
+    "city": "Dhaka",
+    "area": "Banani",
+    "type": "futsal",
+    "description": "Dhaka's most popular futsal venue with 4 FIFA-standard indoor pitches. Artificial turf, goal nets, floodlights, and a spectator gallery. Perfect for 5-a-side and 7-a-side matches.",
+    "coverImage": "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=800&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=800&q=80",
+      "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&q=80"
+    ],
+    "amenities": ["parking", "cafeteria", "changing_room", "shower", "lighting"],
+    "rating": 4.7,
+    "reviewCount": 210,
+    "isActive": true,
+    "branches": [
+      { "id": "b3a", "name": "Banani Main", "address": "Level 3, Sports Complex, Road 17, Banani", "lat": 23.7937, "lng": 90.4021, "phone": "+8801711000004" },
+      { "id": "b3b", "name": "Uttara Branch", "address": "Sector 4, Uttara Model Town", "lat": 23.8741, "lng": 90.3984, "phone": "+8801711000005" }
+    ],
+    "distanceKm": 2.1,
+    "lowestPrice": 800,
+    "createdAt": "2023-05-10T00:00:00Z"
+  },
+  {
+    "id": "v4",
+    "tenantId": "t4",
+    "name": "CourtKing Tennis",
+    "slug": "courtking-tennis",
+    "address": "House 8, Road 3, Gulshan-2",
+    "lat": 23.7966,
+    "lng": 90.4148,
+    "city": "Dhaka",
+    "area": "Gulshan",
+    "type": "tennis",
+    "description": "Premium indoor tennis facility with 3 hard courts and 1 clay court. Professional coaching available for beginners to advanced players. Racket rental and string restringing service on-site.",
+    "coverImage": "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=800&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=800&q=80"
+    ],
+    "amenities": ["parking", "shower", "changing_room", "ac", "equipment_rental", "cafeteria"],
+    "rating": 4.5,
+    "reviewCount": 67,
+    "isActive": true,
+    "branches": [
+      { "id": "b4a", "name": "Gulshan Branch", "address": "House 8, Road 3, Gulshan-2", "lat": 23.7966, "lng": 90.4148, "phone": "+8801711000006" }
+    ],
+    "distanceKm": 1.8,
+    "lowestPrice": 900,
+    "createdAt": "2023-08-20T00:00:00Z"
+  },
+  {
+    "id": "v5",
+    "tenantId": "t5",
+    "name": "HoopZone Basketball",
+    "slug": "hoopzone-basketball",
+    "address": "Block C, Mirpur-10 Sports Hub",
+    "lat": 23.8074,
+    "lng": 90.3664,
+    "city": "Dhaka",
+    "area": "Mirpur",
+    "type": "basketball",
+    "description": "Full-size NBA-standard indoor basketball court with professional hardwood flooring. Suitable for full court 5v5 games or half-court sessions. Scoreboards, shot clocks, and referee service available.",
+    "coverImage": "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&q=80",
+      "https://images.unsplash.com/photo-1519861531473-9200262188bf?w=800&q=80"
+    ],
+    "amenities": ["parking", "changing_room", "shower", "lighting", "equipment_rental"],
+    "rating": 4.4,
+    "reviewCount": 55,
+    "isActive": true,
+    "branches": [
+      { "id": "b5a", "name": "Mirpur-10 Branch", "address": "Block C, Mirpur-10 Sports Hub", "lat": 23.8074, "lng": 90.3664, "phone": "+8801711000007" }
+    ],
+    "distanceKm": 5.6,
+    "lowestPrice": 1000,
+    "createdAt": "2023-09-05T00:00:00Z"
+  },
+  {
+    "id": "v6",
+    "tenantId": "t6",
+    "name": "AquaPlex Swimming",
+    "slug": "aquaplex-swimming",
+    "address": "House 22, Ring Road, Mohammadpur",
+    "lat": 23.7614,
+    "lng": 90.3563,
+    "city": "Dhaka",
+    "area": "Mohammadpur",
+    "type": "swimming",
+    "description": "Olympic-size heated indoor swimming pool with dedicated lap lanes, a kids' pool, and a learner zone. Certified lifeguards on duty at all times. Swimming lessons available for all age groups.",
+    "coverImage": "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=800&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=800&q=80"
+    ],
+    "amenities": ["parking", "shower", "changing_room", "ac", "cafeteria"],
+    "rating": 4.3,
+    "reviewCount": 43,
+    "isActive": true,
+    "branches": [
+      { "id": "b6a", "name": "Mohammadpur Branch", "address": "House 22, Ring Road, Mohammadpur", "lat": 23.7614, "lng": 90.3563, "phone": "+8801711000008" }
+    ],
+    "distanceKm": 4.2,
+    "lowestPrice": 500,
+    "createdAt": "2023-10-01T00:00:00Z"
+  },
+  {
+    "id": "v7",
+    "tenantId": "t7",
+    "name": "IronFit Gym",
+    "slug": "ironfit-gym",
+    "address": "Level 4, Bashundhara City Adjacent, Panthapath",
+    "lat": 23.7519,
+    "lng": 90.3936,
+    "city": "Dhaka",
+    "area": "Panthapath",
+    "type": "gym",
+    "description": "A 10,000 sq ft premium fitness center with the latest Technogym equipment, free weights zone, functional training area, and dedicated cardio floor. Personal training and group classes available.",
+    "coverImage": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80",
+      "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80"
+    ],
+    "amenities": ["parking", "shower", "changing_room", "ac", "cafeteria", "wifi"],
+    "rating": 4.9,
+    "reviewCount": 312,
+    "isActive": true,
+    "branches": [
+      { "id": "b7a", "name": "Panthapath Branch", "address": "Level 4, Bashundhara City Adjacent", "lat": 23.7519, "lng": 90.3936, "phone": "+8801711000009" },
+      { "id": "b7b", "name": "Dhanmondi Branch", "address": "Road 27, Dhanmondi", "lat": 23.7451, "lng": 90.3742, "phone": "+8801711000010" }
+    ],
+    "distanceKm": 2.9,
+    "lowestPrice": 300,
+    "createdAt": "2023-04-01T00:00:00Z"
+  },
+  {
+    "id": "v8",
+    "tenantId": "t8",
+    "name": "ZenYoga & Wellness Studio",
+    "slug": "zenyoga-wellness-studio",
+    "address": "House 3, Road 8, Lalmatia",
+    "lat": 23.7535,
+    "lng": 90.3695,
+    "city": "Dhaka",
+    "area": "Lalmatia",
+    "type": "yoga_studio",
+    "description": "A serene and fully air-conditioned yoga and wellness studio with 3 dedicated practice rooms. Offering Hatha, Vinyasa, Yin, and guided meditation sessions. Mats, blocks, and straps provided.",
+    "coverImage": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80",
+    "images": [
+      "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80",
+      "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80"
+    ],
+    "amenities": ["parking", "shower", "changing_room", "ac", "wifi", "equipment_rental"],
+    "rating": 4.7,
+    "reviewCount": 98,
+    "isActive": true,
+    "branches": [
+      { "id": "b8a", "name": "Lalmatia Branch", "address": "House 3, Road 8, Lalmatia", "lat": 23.7535, "lng": 90.3695, "phone": "+8801711000011" }
+    ],
+    "distanceKm": 3.7,
+    "lowestPrice": 400,
+    "createdAt": "2023-11-01T00:00:00Z"
+  }
+]

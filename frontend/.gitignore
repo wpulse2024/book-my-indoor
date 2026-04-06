@@ -1,13 +1,6 @@
 /node_modules
 /dist
 /build
-/public
-/src
-/test
-/docs
-/examples
 /scripts
 /config
 /logs
-/tmp
-/cache

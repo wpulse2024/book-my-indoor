@@ -1,0 +1,50 @@
+[
+  {
+    "id": "tx1",
+    "type": "credit",
+    "amount": 2000,
+    "reference": "TOPUP-20260401",
+    "description": "Wallet top-up via SSLCommerz",
+    "createdAt": "2026-04-01T10:00:00Z"
+  },
+  {
+    "id": "tx2",
+    "type": "debit",
+    "amount": 900,
+    "reference": "BK-bk2",
+    "description": "Booking: ProBadminton Club — Evening Court",
+    "createdAt": "2026-04-04T14:35:00Z"
+  },
+  {
+    "id": "tx3",
+    "type": "credit",
+    "amount": 1500,
+    "reference": "REFUND-bk4",
+    "description": "Refund: City Cricket Arena — Afternoon Session",
+    "createdAt": "2026-03-10T15:00:00Z"
+  },
+  {
+    "id": "tx4",
+    "type": "credit",
+    "amount": 3000,
+    "reference": "TOPUP-20260315",
+    "description": "Wallet top-up via bKash",
+    "createdAt": "2026-03-15T09:00:00Z"
+  },
+  {
+    "id": "tx5",
+    "type": "debit",
+    "amount": 1400,
+    "reference": "BK-bk3",
+    "description": "Booking: FutsalPlex Banani — Evening Pitch",
+    "createdAt": "2026-03-18T09:05:00Z"
+  },
+  {
+    "id": "tx6",
+    "type": "credit",
+    "amount": 500,
+    "reference": "TOPUP-20260320",
+    "description": "Wallet top-up via Nagad",
+    "createdAt": "2026-03-20T11:30:00Z"
+  }
+]

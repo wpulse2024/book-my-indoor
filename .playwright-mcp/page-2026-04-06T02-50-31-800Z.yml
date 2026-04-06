@@ -1,0 +1,180 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: CourtKinetic
+        - generic [ref=e8]:
+          - link "Home" [ref=e9] [cursor=pointer]:
+            - /url: "#"
+          - link "Discover" [ref=e10] [cursor=pointer]:
+            - /url: "#"
+          - link "My Bookings" [ref=e11] [cursor=pointer]:
+            - /url: "#"
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - img [ref=e14]
+          - textbox "Search venues..." [ref=e16]
+        - button [ref=e17] [cursor=pointer]:
+          - img [ref=e18]
+        - button [ref=e21] [cursor=pointer]:
+          - img [ref=e22]
+        - button [ref=e25] [cursor=pointer]:
+          - img [ref=e26]
+  - main [ref=e28]:
+    - generic [ref=e35]:
+      - heading "The Next Court Is Yours." [level=1] [ref=e36]:
+        - text: The Next
+        - text: Court Is
+        - text: Yours.
+      - paragraph [ref=e37]: Book premium indoor arenas across Dhaka in seconds.
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - img [ref=e40]
+          - textbox "Sport or venue..." [ref=e42]
+        - generic [ref=e43]:
+          - img [ref=e44]
+          - generic [ref=e47]: Gulshan, Dhaka
+        - generic [ref=e48]:
+          - img [ref=e49]
+          - textbox [ref=e51]:
+            - /placeholder: Today
+        - button "Find" [ref=e52] [cursor=pointer]
+    - generic [ref=e53]:
+      - paragraph [ref=e54]: Categories
+      - heading "Browse by Venue Type" [level=2] [ref=e55]
+      - generic [ref=e56]:
+        - generic [ref=e60] [cursor=pointer]:
+          - paragraph [ref=e61]: Turf
+          - paragraph [ref=e62]: 12 Venues
+        - generic [ref=e66] [cursor=pointer]:
+          - paragraph [ref=e67]: Badminton
+          - paragraph [ref=e68]: 24 Venues
+        - generic [ref=e72] [cursor=pointer]:
+          - paragraph [ref=e73]: Studio
+          - paragraph [ref=e74]: 8 Venues
+        - generic [ref=e78] [cursor=pointer]:
+          - paragraph [ref=e79]: Futsal
+          - paragraph [ref=e80]: 15 Venues
+    - generic [ref=e81]:
+      - generic [ref=e82]:
+        - heading "Top Rated Arenas" [level=2] [ref=e83]
+        - link "View all" [ref=e84] [cursor=pointer]:
+          - /url: "#"
+          - text: View all
+          - img [ref=e85]
+      - generic [ref=e87]:
+        - generic [ref=e88] [cursor=pointer]:
+          - generic [ref=e89]:
+            - generic [ref=e91]: From ৳1,200/hr
+            - generic [ref=e92]:
+              - img [ref=e93]
+              - text: "4.9"
+          - generic [ref=e95]:
+            - heading "Victory Multi-Sport Complex" [level=3] [ref=e96]
+            - paragraph [ref=e97]:
+              - img [ref=e98]
+              - text: Banani, Dhaka
+            - generic [ref=e101]:
+              - generic [ref=e102]: Badminton
+              - generic [ref=e103]: Basketball
+        - generic [ref=e104] [cursor=pointer]:
+          - generic [ref=e105]:
+            - generic [ref=e107]: From ৳800/hr
+            - generic [ref=e108]:
+              - img [ref=e109]
+              - text: "4.7"
+          - generic [ref=e111]:
+            - heading "Elite Indoor Turf Grounds" [level=3] [ref=e112]
+            - paragraph [ref=e113]:
+              - img [ref=e114]
+              - text: Uttara, Dhaka
+            - generic [ref=e117]:
+              - generic [ref=e118]: Futsal
+              - generic [ref=e119]: Cricket
+        - generic [ref=e120] [cursor=pointer]:
+          - generic [ref=e121]:
+            - generic [ref=e123]: From ৳1,500/hr
+            - generic [ref=e124]:
+              - img [ref=e125]
+              - text: "4.8"
+          - generic [ref=e127]:
+            - heading "The Zen Wellness Studio" [level=3] [ref=e128]
+            - paragraph [ref=e129]:
+              - img [ref=e130]
+              - text: Dhanmondi, Dhaka
+            - generic [ref=e133]:
+              - generic [ref=e134]: Yoga
+              - generic [ref=e135]: Dance
+    - generic [ref=e137]:
+      - heading "Ready in Three Steps" [level=2] [ref=e138]
+      - paragraph [ref=e139]: The fastest way to get on the court
+      - generic [ref=e140]:
+        - generic [ref=e141]:
+          - img [ref=e143]
+          - heading "Find" [level=3] [ref=e145]
+          - paragraph [ref=e146]: Discover top-rated venues near your location with real-time availability.
+        - generic [ref=e147]:
+          - img [ref=e149]
+          - heading "Book" [level=3] [ref=e151]
+          - paragraph [ref=e152]: Select your preferred time slot and pay securely via multiple payment methods.
+        - generic [ref=e153]:
+          - img [ref=e155]
+          - heading "Play" [level=3] [ref=e158]
+          - paragraph [ref=e159]: Show your booking confirmation at the venue and start your session!
+    - generic [ref=e161]:
+      - generic [ref=e162]:
+        - heading "Own a Venue? List it Today." [level=2] [ref=e163]:
+          - text: Own a Venue?
+          - text: List it Today.
+        - paragraph [ref=e164]: Join 100+ venues already reaching thousands of athletes through CourtKinetic.
+      - button "Subscribe Your Venue" [ref=e165] [cursor=pointer]
+  - contentinfo [ref=e166]:
+    - generic [ref=e167]:
+      - generic [ref=e168]:
+        - paragraph [ref=e169]: CourtKinetic
+        - paragraph [ref=e170]: Dhaka's premier destination for high-velocity indoor sports booking. Built for the athlete in you.
+      - generic [ref=e171]:
+        - paragraph [ref=e172]: Explore
+        - list [ref=e173]:
+          - listitem [ref=e174]:
+            - link "Popular Venues" [ref=e175] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e176]:
+            - link "Special Offers" [ref=e177] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e178]:
+            - link "Upcoming Events" [ref=e179] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e180]:
+            - link "Gift Cards" [ref=e181] [cursor=pointer]:
+              - /url: "#"
+      - generic [ref=e182]:
+        - paragraph [ref=e183]: Company
+        - list [ref=e184]:
+          - listitem [ref=e185]:
+            - link "About Us" [ref=e186] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e187]:
+            - link "Careers" [ref=e188] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e189]:
+            - link "Partner Program" [ref=e190] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e191]:
+            - link "Contact" [ref=e192] [cursor=pointer]:
+              - /url: "#"
+      - generic [ref=e193]:
+        - paragraph [ref=e194]: Stay Updated
+        - textbox "Your email address" [ref=e195]
+        - button "Subscribe" [ref=e196] [cursor=pointer]
+        - generic [ref=e197]:
+          - link [ref=e198] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e199]
+          - link [ref=e201] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e202]
+          - link [ref=e204] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e205]
+    - paragraph [ref=e208]: © 2024 CourtKinetic. All Rights Reserved. Precision Engineered in Dhaka.
