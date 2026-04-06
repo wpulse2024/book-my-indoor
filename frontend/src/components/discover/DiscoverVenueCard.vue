@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps<{
+  slug: string
   name: string
   location: string
   distance: string
@@ -18,10 +20,15 @@ const props = defineProps<{
 }>()
 
 const liked = ref(false)
+const router = useRouter()
+
+function goToDetail() {
+  router.push({ name: 'venue-detail', params: { slug: props.slug } })
+}
 </script>
 
 <template>
-  <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+  <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300 group cursor-pointer" @click="goToDetail">
     <!-- Image -->
     <div class="relative overflow-hidden" style="height: 220px;">
       <img
@@ -100,11 +107,17 @@ const liked = ref(false)
       </div>
 
       <!-- Buttons -->
-      <div class="flex items-center gap-3">
-        <button class="flex-1 border border-gray-200 text-gray-700 font-semibold text-sm py-2.5 rounded-xl hover:border-blue-300 hover:text-blue-700 transition-colors">
+      <div class="flex items-center gap-3" @click.stop>
+        <button
+          @click="goToDetail"
+          class="flex-1 border border-gray-200 text-gray-700 font-semibold text-sm py-2.5 rounded-xl hover:border-blue-300 hover:text-blue-700 transition-colors"
+        >
           Details
         </button>
-        <button class="flex-2 bg-orange-500 hover:bg-orange-600 text-white font-black text-sm py-2.5 px-6 rounded-xl transition-colors uppercase tracking-wide">
+        <button
+          @click="goToDetail"
+          class="flex-2 bg-orange-500 hover:bg-orange-600 text-white font-black text-sm py-2.5 px-6 rounded-xl transition-colors uppercase tracking-wide"
+        >
           Book Slot
         </button>
       </div>

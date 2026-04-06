@@ -26,11 +26,12 @@ const isActive = (name: string) => route.name === name
           <RouterLink
             to="/discover"
             class="pb-0.5 transition-colors no-underline"
-            :class="isActive('discover') ? 'text-blue-700 border-b-2 border-blue-700' : 'text-gray-500 hover:text-gray-900'"
+            :class="isActive('discover') || isActive('venue-detail') ? 'text-blue-700 border-b-2 border-blue-700' : 'text-gray-500 hover:text-gray-900'"
           >
-            Discover
+            Explore
           </RouterLink>
           <a href="#" class="text-gray-500 hover:text-gray-900 transition-colors no-underline">My Bookings</a>
+          <a href="#" class="text-gray-500 hover:text-gray-900 transition-colors no-underline">Trainers</a>
         </div>
       </div>
 

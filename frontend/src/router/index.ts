@@ -14,6 +14,11 @@ const router = createRouter({
       name: 'discover',
       component: () => import('@/pages/DiscoverPage.vue'),
     },
+    {
+      path: '/venue/:slug',
+      name: 'venue-detail',
+      component: () => import('@/pages/VenueDetailPage.vue'),
+    },
   ],
 })
 

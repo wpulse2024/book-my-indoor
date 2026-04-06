@@ -1,356 +1,109 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useVenueStore } from '@/stores/venue.store'
-import { useBookingStore } from '@/stores/booking.store'
-import { useAuthStore } from '@/stores/auth.store'
-import SlotPicker from '@/components/venue/SlotPicker.vue'
-import AppBadge from '@/components/common/AppBadge.vue'
-import AppSpinner from '@/components/common/AppSpinner.vue'
-import AuthModal from '@/components/common/AuthModal.vue'
-import type { AvailableSlot } from '@/types'
+import TheNavbar from '@/components/TheNavbar.vue'
+import VenueGallery from '@/components/venue-detail/VenueGallery.vue'
+import BookingWidget from '@/components/venue-detail/BookingWidget.vue'
+import VenueAmenities from '@/components/venue-detail/VenueAmenities.vue'
+import VenueMap from '@/components/venue-detail/VenueMap.vue'
+import VenueReviews from '@/components/venue-detail/VenueReviews.vue'
+import AlsoBooked from '@/components/venue-detail/AlsoBooked.vue'
+import VenueDetailFooter from '@/components/venue-detail/VenueDetailFooter.vue'
 
-const props = defineProps<{ slug: string }>()
-const router = useRouter()
-const venueStore = useVenueStore()
-const bookingStore = useBookingStore()
-const auth = useAuthStore()
-
-const selectedDate = ref(new Date().toISOString().split('T')[0])
-const selectedSlot = ref<AvailableSlot | null>(null)
-const showAuth = ref(false)
-const activeImage = ref(0)
-
-const venue = computed(() => venueStore.currentVenue)
-
-const amenityIcons: Record<string, string> = {
-  parking: '🅿️', wifi: '📶', cafeteria: '☕', shower: '🚿',
-  changing_room: '👕', lighting: '💡', ac: '❄️', equipment_rental: '🎾',
+const venue = {
+  name: 'Titan Arena Complex',
+  badge: 'Most Booked',
+  rating: 4.9,
+  tier: 'PRO TIER VENUE',
+  address: 'Downtown Sports District, Seattle',
+  size: '45,000 SQ FT',
+  description: 'Experience the gold standard of indoor sports. Titan Arena features Olympic-grade flooring, professional climate control, and smart-lighting technology that adapts to your game. Designed for high-performance athletes and recreational players alike, we provide the ultimate environment for competitive play and focused training.',
+  images: [
+    'https://picsum.photos/seed/titan-main/800/500',
+    'https://picsum.photos/seed/titan-court/500/300',
+    'https://picsum.photos/seed/titan-tennis/500/300',
+    'https://picsum.photos/seed/titan-gym/500/300',
+    'https://picsum.photos/seed/titan-locker/500/300',
+  ],
+  amenities: [
+    { icon: '❄️', label: 'Full AC' },
+    { icon: '🚿', label: 'Luxe Showers' },
+    { icon: '🅿️', label: 'Valet Parking' },
+    { icon: '⚡', label: 'Energy Bar' },
+  ],
 }
-
-watch(selectedDate, (d) => {
-  if (venue.value) venueStore.fetchAvailableSlots(venue.value.slug, d)
-})
-
-function proceed() {
-  if (!selectedSlot.value || !venue.value) return
-  if (!auth.isLoggedIn) { showAuth.value = true; return }
-  bookingStore.setDraft(selectedSlot.value, venue.value, selectedDate.value)
-  router.push({ name: 'booking', params: { slotId: selectedSlot.value.id } })
-}
-
-onMounted(async () => {
-  await venueStore.fetchVenue(props.slug)
-  if (venue.value) venueStore.fetchAvailableSlots(venue.value.slug, selectedDate.value)
-})
 </script>
 
 <template>
-  <div class="venue-detail">
-    <div v-if="venueStore.isLoading && !venue" class="venue-detail__loading">
-      <AppSpinner size="lg" />
-    </div>
+  <div class="min-h-screen bg-white font-sans">
+    <TheNavbar />
+    <main class="max-w-6xl mx-auto px-6 py-6">
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 text-sm mb-5">
+        <RouterLink to="/" class="text-gray-400 hover:text-blue-700 transition-colors font-medium">Home</RouterLink>
+        <svg class="w-3.5 h-3.5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+        <RouterLink to="/discover" class="text-gray-400 hover:text-blue-700 transition-colors font-medium">Discover</RouterLink>
+        <svg class="w-3.5 h-3.5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+        <span class="text-gray-900 font-semibold truncate">{{ venue.name }}</span>
+      </nav>
 
-    <template v-else-if="venue">
-      <!-- ── Gallery ── -->
-      <div class="venue-detail__gallery">
-        <div class="venue-detail__main-image">
-          <img
-            v-if="venue.images[activeImage] || venue.coverImage"
-            :src="venue.images[activeImage] ?? venue.coverImage!"
-            :alt="venue.name"
-          />
-          <div v-else class="venue-detail__image-placeholder">🏟️</div>
-        </div>
-        <div v-if="venue.images.length > 1" class="venue-detail__thumbs">
-          <button
-            v-for="(img, i) in venue.images.slice(0, 4)"
-            :key="i"
-            :class="['venue-detail__thumb', { 'venue-detail__thumb--active': i === activeImage }]"
-            @click="activeImage = i"
-          >
-            <img :src="img" :alt="`Image ${i + 1}`" />
-          </button>
-        </div>
-      </div>
+      <!-- Gallery -->
+      <VenueGallery :images="venue.images" :badge="venue.badge" class="mb-8" />
 
-      <!-- ── Body ── -->
-      <div class="container venue-detail__body">
-        <!-- Left: Info -->
-        <div class="venue-detail__info">
-          <!-- Header -->
-          <div class="venue-detail__info-header">
-            <div>
-              <AppBadge variant="green">Open</AppBadge>
-              <h1 class="venue-detail__name">{{ venue.name }}</h1>
-              <p class="venue-detail__location">📍 {{ venue.address }}, {{ venue.area }}, {{ venue.city }}</p>
-            </div>
-            <div class="venue-detail__rating-block">
-              <span class="venue-detail__rating-value">{{ venue.rating.toFixed(1) }}</span>
-              <div class="stars text-xl">★★★★★</div>
-              <span class="text-sm text-slate-500">{{ venue.reviewCount }} reviews</span>
-            </div>
-          </div>
-
-          <hr class="divider" />
-
-          <!-- About -->
-          <div v-if="venue.description">
-            <h2 class="venue-detail__section-title">About</h2>
-            <p class="venue-detail__description">{{ venue.description }}</p>
-          </div>
-
-          <!-- Amenities -->
-          <div v-if="venue.amenities.length">
-            <h2 class="venue-detail__section-title">Amenities</h2>
-            <div class="venue-detail__amenities">
-              <span v-for="a in venue.amenities" :key="a" class="venue-detail__amenity">
-                {{ amenityIcons[a] ?? '✓' }} {{ a.replace(/_/g, ' ') }}
+      <!-- Two column layout -->
+      <div class="flex gap-8 items-start">
+        <!-- Left -->
+        <div class="flex-1 min-w-0 space-y-8">
+          <!-- Title block -->
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="bg-blue-700 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                {{ venue.tier }}
               </span>
-            </div>
-          </div>
-
-          <!-- Branches -->
-          <div v-if="venue.branches.length > 1">
-            <h2 class="venue-detail__section-title">Branches</h2>
-            <div class="venue-detail__branches">
-              <div v-for="branch in venue.branches" :key="branch.id" class="venue-detail__branch">
-                <span class="font-semibold text-slate-800">{{ branch.name }}</span>
-                <span class="text-sm text-slate-500">📍 {{ branch.address }}</span>
-                <a :href="`tel:${branch.phone}`" class="text-sm text-primary-600 font-medium">📞 {{ branch.phone }}</a>
+              <div class="flex items-center gap-1">
+                <svg class="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="font-black text-gray-900 text-sm">{{ venue.rating }}</span>
               </div>
             </div>
+            <h1 class="font-black text-gray-900 leading-tight mb-2" style="font-size: clamp(1.8rem, 3vw, 2.5rem);">
+              {{ venue.name }}
+            </h1>
+            <div class="flex items-center gap-3 text-gray-400 text-xs font-semibold uppercase tracking-wider mb-4">
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                {{ venue.address }}
+              </span>
+              <span class="text-gray-200">•</span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                </svg>
+                {{ venue.size }}
+              </span>
+            </div>
+            <p class="text-gray-500 text-sm leading-relaxed max-w-xl">{{ venue.description }}</p>
           </div>
+
+          <VenueAmenities :amenities="venue.amenities" />
+          <VenueMap :address="venue.address" />
+          <VenueReviews />
         </div>
 
-        <!-- Right: Booking panel -->
-        <aside class="venue-detail__booking-panel">
-          <div class="booking-panel">
-            <h2 class="booking-panel__title">Book a Slot</h2>
-
-            <!-- Date picker -->
-            <div class="form-group mb-4">
-              <label class="form-label">Select Date</label>
-              <input
-                v-model="selectedDate"
-                type="date"
-                class="form-input"
-                :min="new Date().toISOString().split('T')[0]"
-              />
-            </div>
-
-            <!-- Slot picker -->
-            <SlotPicker
-              v-model="selectedSlot"
-              :slots="venueStore.availableSlots"
-              :loading="venueStore.slotsLoading"
-              :date="selectedDate"
-            />
-
-            <button
-              :class="['btn btn--primary btn--full mt-4', { 'opacity-50': !selectedSlot }]"
-              :disabled="!selectedSlot"
-              @click="proceed"
-            >
-              {{ selectedSlot ? `Book for ৳${selectedSlot.effectivePrice}` : 'Select a Slot' }}
-            </button>
-
-            <p class="booking-panel__note">No payment charged until confirmation</p>
-          </div>
-        </aside>
+        <!-- Right: booking widget -->
+        <div class="w-80 flex-shrink-0">
+          <BookingWidget />
+        </div>
       </div>
-    </template>
 
-    <div v-else class="venue-detail__not-found">
-      <h2>Venue not found</h2>
-      <RouterLink to="/venues" class="btn btn--primary mt-4">Browse Venues</RouterLink>
-    </div>
-
-    <AuthModal v-if="showAuth" @close="showAuth = false" />
+      <AlsoBooked />
+    </main>
+    <VenueDetailFooter />
   </div>
 </template>
-
-<style lang="scss" scoped>
-.venue-detail {
-  &__loading, &__not-found {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-    gap: 1rem;
-  }
-
-  &__gallery {
-    width: 100%;
-    background: $color-dark;
-  }
-
-  &__main-image {
-    aspect-ratio: 21 / 9;
-    overflow: hidden;
-    max-height: 480px;
-
-    img { width: 100%; height: 100%; object-fit: cover; }
-  }
-
-  &__image-placeholder {
-    width: 100%;
-    height: 100%;
-    min-height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 5rem;
-    background: #1e293b;
-  }
-
-  &__thumbs {
-    display: flex;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    background: #1e293b;
-    overflow-x: auto;
-    justify-content: center;
-  }
-
-  &__thumb {
-    width: 5rem;
-    height: 3.5rem;
-    border-radius: 0.5rem;
-    overflow: hidden;
-    border: 2px solid transparent;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: border-color $transition-base;
-
-    img { width: 100%; height: 100%; object-fit: cover; }
-
-    &--active { border-color: $color-primary; }
-  }
-
-  &__body {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    padding-top: 2rem;
-    padding-bottom: 4rem;
-
-    @media (min-width: $bp-lg) { grid-template-columns: 1fr 380px; }
-  }
-
-  &__info {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  &__info-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  &__name {
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    font-weight: 800;
-    color: $color-dark;
-    margin-top: 0.375rem;
-  }
-
-  &__location {
-    font-size: 0.9375rem;
-    color: $color-muted;
-    margin-top: 0.25rem;
-  }
-
-  &__rating-block {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    flex-shrink: 0;
-  }
-
-  &__rating-value {
-    font-size: 2rem;
-    font-weight: 800;
-    color: $color-dark;
-    line-height: 1;
-  }
-
-  &__section-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: $color-dark;
-    margin-bottom: 0.75rem;
-  }
-
-  &__description {
-    font-size: 0.9375rem;
-    color: $color-muted;
-    line-height: 1.7;
-  }
-
-  &__amenities {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.625rem;
-  }
-
-  &__amenity {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    background: $color-surface;
-    border: 1px solid $color-border;
-    border-radius: $radius-btn;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: $color-dark-soft;
-    text-transform: capitalize;
-  }
-
-  &__branches {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  &__branch {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.875rem 1rem;
-    background: $color-surface;
-    border-radius: $radius-btn;
-    border: 1px solid $color-border;
-  }
-}
-
-.booking-panel {
-  background: $color-white;
-  border-radius: $radius-card;
-  border: 1px solid $color-border;
-  padding: 1.5rem;
-  box-shadow: $shadow-card;
-  position: sticky;
-  top: 5rem;
-
-  &__title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: $color-dark;
-    margin-bottom: 1.25rem;
-  }
-
-  &__note {
-    text-align: center;
-    font-size: 0.8125rem;
-    color: $color-muted;
-    margin-top: 0.75rem;
-  }
-}
-</style>

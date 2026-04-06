@@ -12,6 +12,7 @@ const sort = ref('Near Me')
 
 const venues = [
   {
+    slug: 'the-kinetic-arena',
     name: 'The Kinetic Arena',
     location: 'Brooklyn, NY',
     distance: '1.2',
@@ -30,6 +31,7 @@ const venues = [
     dots: 3,
   },
   {
+    slug: 'the-shuttle-hub',
     name: 'The Shuttle Hub',
     location: 'Manhattan, NY',
     distance: '3.5',
@@ -47,6 +49,7 @@ const venues = [
     image: 'https://picsum.photos/seed/shuttle-hub/600/400',
   },
   {
+    slug: 'prime-tennis-club',
     name: 'Prime Tennis Club',
     location: 'Queens, NY',
     distance: '5.8',

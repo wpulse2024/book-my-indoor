@@ -1,5 +1,8 @@
 <script setup lang="ts">
-defineProps<{
+import { useRouter } from 'vue-router'
+
+const props = defineProps<{
+  slug: string
   name: string
   location: string
   rating: number
@@ -8,10 +11,15 @@ defineProps<{
   gradient: string
   image?: string
 }>()
+
+const router = useRouter()
+function goToDetail() {
+  router.push({ name: 'venue-detail', params: { slug: props.slug } })
+}
 </script>
 
 <template>
-  <div class="bg-white rounded-xl overflow-hidden cursor-pointer group hover:shadow-xl transition-all duration-300">
+  <div @click="goToDetail" class="bg-white rounded-xl overflow-hidden cursor-pointer group hover:shadow-xl transition-all duration-300">
     <!-- Image -->
     <div class="relative overflow-hidden" style="height: 180px;">
       <img v-if="image" :src="image" :alt="name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
