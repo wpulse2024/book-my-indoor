@@ -30,8 +30,14 @@ const isActive = (name: string) => route.name === name
           >
             Explore
           </RouterLink>
-          <a href="#" class="text-gray-500 hover:text-gray-900 transition-colors no-underline">My Bookings</a>
-          <a href="#" class="text-gray-500 hover:text-gray-900 transition-colors no-underline">Trainers</a>
+          <RouterLink
+            to="/my-bookings"
+            class="pb-0.5 transition-colors no-underline"
+            :class="isActive('my-bookings') ? 'text-blue-700 border-b-2 border-blue-700' : 'text-gray-500 hover:text-gray-900'"
+          >
+            My Bookings
+          </RouterLink>
+          <a href="#" class="text-gray-500 hover:text-gray-900 transition-colors no-underline">Help</a>
         </div>
       </div>
 
@@ -51,12 +57,10 @@ const isActive = (name: string) => route.name === name
           </svg>
           <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white"></span>
         </button>
-        <!-- Avatar -->
-        <button class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center ml-1 overflow-hidden">
-          <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-          </svg>
-        </button>
+        <!-- Avatar — links to My Bookings -->
+        <RouterLink to="/my-bookings" class="w-8 h-8 rounded-full overflow-hidden ml-1 flex-shrink-0 ring-2 ring-transparent hover:ring-blue-400 transition-all">
+          <img src="https://picsum.photos/seed/athlete-avatar/80/80" alt="avatar" class="w-full h-full object-cover" />
+        </RouterLink>
       </div>
     </div>
   </nav>

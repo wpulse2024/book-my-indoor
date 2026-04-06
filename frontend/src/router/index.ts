@@ -19,6 +19,11 @@ const router = createRouter({
       name: 'venue-detail',
       component: () => import('@/pages/VenueDetailPage.vue'),
     },
+    {
+      path: '/my-bookings',
+      name: 'my-bookings',
+      component: () => import('@/pages/MyBookingsPage.vue'),
+    },
   ],
 })
 

@@ -1,5 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import BookingModal from '@/components/BookingModal.vue'
+
+const showModal = ref(false)
+
+const venue = {
+  name: 'Titan Arena Complex',
+  tier: 'Pro Tier',
+  image: 'https://picsum.photos/seed/titan-main/800/500',
+}
 
 const selectedDate = ref('2023-10-24')
 const selectedSlot = ref('08:00 AM\n$35')
@@ -119,7 +128,10 @@ const dayName = computed(() => {
       </div>
 
       <!-- CTA -->
-      <button class="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-black text-sm py-4 rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wide">
+      <button
+        @click="showModal = true"
+        class="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-black text-sm py-4 rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wide"
+      >
         Continue to Booking
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
@@ -128,4 +140,15 @@ const dayName = computed(() => {
       <p class="text-center text-gray-400 text-xs">Free cancellation up to 12 hours before the start of the session.</p>
     </div>
   </div>
+
+  <!-- Booking Modal -->
+  <BookingModal
+    v-if="showModal"
+    :venue="venue"
+    :date="displayDate"
+    :time-slot="selectedSlotKey.split('-')[0]"
+    :total-price="'$' + total.toFixed(2)"
+    @close="showModal = false"
+    @confirm="showModal = false"
+  />
 </template>
