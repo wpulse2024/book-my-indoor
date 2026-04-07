@@ -32,6 +32,12 @@ export class RolesController {
     return this.rolesService.findAll();
   }
 
+  @Get('non-admin')
+  @RequirePermissions('roles:readNonAdmin')
+  findAllExceptAdmin() {
+    return this.rolesService.findAllExceptAdmin();
+  }
+
   @Get(':id')
   @RequirePermissions('roles:singleRead')
   findOne(@Param('id') id: string) {

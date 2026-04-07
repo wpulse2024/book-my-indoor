@@ -19,6 +19,7 @@ const SYSTEM_PERMISSIONS: Array<{ name: string; description: string }> = [
   // roles resource
   { name: 'roles:create', description: 'Create a new role' },
   { name: 'roles:read', description: 'List all roles' },
+  { name: 'roles:readNonAdmin', description: 'List all roles excluding the admin role' },
   { name: 'roles:singleRead', description: 'Read a single role' },
   { name: 'roles:update', description: 'Update a role' },
   { name: 'roles:delete', description: 'Delete a role' },
@@ -28,6 +29,12 @@ const SYSTEM_PERMISSIONS: Array<{ name: string; description: string }> = [
   { name: 'users:singleRead', description: 'Read a single user' },
   { name: 'users:assignRole', description: 'Assign roles to a user' },
   { name: 'users:delete', description: 'Delete a user' },
+  // organizations resource
+  { name: 'organizations:create', description: 'Create a new organization' },
+  { name: 'organizations:read', description: 'List all organizations' },
+  { name: 'organizations:singleRead', description: 'Read a single organization' },
+  { name: 'organizations:update', description: 'Update an organization' },
+  { name: 'organizations:delete', description: 'Delete an organization' },
 ];
 
 const ADMIN_ROLE_NAME = 'admin';
@@ -53,6 +60,7 @@ export class SeederService {
 
     const permissions = await this.seedPermissions();
     const adminRole = await this.seedAdminRole(permissions);
+    await this.seedAgentRole();
     await this.seedAdminUser(adminRole._id as any);
 
     this.logger.log('Seed complete.');
@@ -104,6 +112,26 @@ export class SeederService {
       `Role '${ADMIN_ROLE_NAME}' ready with ${permissionIds.length} permissions.`,
     );
     return role!;
+  }
+
+  // ─── Agent role ─────────────────────────────────────────────────────────────
+
+  private async seedAgentRole(): Promise<void> {
+    this.logger.log(`Seeding role: 'agent'…`);
+
+    await this.roleModel.findOneAndUpdate(
+      { name: 'agent' },
+      {
+        $setOnInsert: {
+          name: 'agent',
+          description: 'Organization agent with limited access',
+          permissions: [],
+        },
+      },
+      { upsert: true, new: true },
+    );
+
+    this.logger.log(`Role 'agent' ready.`);
   }
 
   // ─── Admin user ─────────────────────────────────────────────────────────────

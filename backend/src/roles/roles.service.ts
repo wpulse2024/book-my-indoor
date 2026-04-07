@@ -25,6 +25,14 @@ export class RolesService {
     return this.roleModel.find().populate('permissions').lean().exec();
   }
 
+  findAllExceptAdmin(): Promise<Role[]> {
+    return this.roleModel
+      .find({ name: { $ne: 'admin' } })
+      .populate('permissions')
+      .lean()
+      .exec();
+  }
+
   async findOne(id: string): Promise<Role> {
     const role = await this.roleModel
       .findById(id)
