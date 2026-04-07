@@ -16,6 +16,8 @@ const SYSTEM_PERMISSIONS: Array<{ name: string; description: string }> = [
   { name: 'permissions:read', description: 'List all permissions' },
   { name: 'permissions:singleRead', description: 'Read a single permission' },
   { name: 'permissions:delete', description: 'Delete a permission' },
+  // auth resource
+  { name: 'auth:loginAsUser', description: 'Login as any user account (admin impersonation)' },
   // roles resource
   { name: 'roles:create', description: 'Create a new role' },
   { name: 'roles:read', description: 'List all roles' },

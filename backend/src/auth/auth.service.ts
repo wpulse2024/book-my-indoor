@@ -1,5 +1,6 @@
 import {
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -50,5 +51,25 @@ export class AuthService {
 
   async getProfile(userId: string) {
     return this.usersService.findOne(userId);
+  }
+
+  async loginAsUser(userId: string) {
+    const user = await this.usersService.findOne(userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    const payload: JwtPayload = {
+      sub: (user as any)._id.toString(),
+      phone: user.phone,
+    };
+
+    return {
+      accessToken: this.jwtService.sign(payload),
+      user: {
+        id: (user as any)._id,
+        phone: user.phone,
+        email: user.email,
+        roles: user.roles,
+      },
+    };
   }
 }

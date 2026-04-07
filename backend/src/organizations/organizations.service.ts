@@ -63,6 +63,10 @@ export class OrganizationsService {
       agentId: agentUser._id,
     });
 
+    await this.userModel.findByIdAndUpdate(agentUser._id, {
+      organization: org._id,
+    });
+
     return org.populate({ path: 'agentId', select: '-password' });
   }
 

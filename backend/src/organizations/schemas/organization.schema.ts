@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { User } from 'src/users/schemas/user.schema';
 
 export type OrganizationDocument = HydratedDocument<Organization>;
 
@@ -14,7 +13,7 @@ export class Organization {
   @Prop({ required: true, unique: true, trim: true })
   title!: string;
 
-  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   agentId!: Types.ObjectId;
 
   @Prop({ type: String, enum: COMMISSION_TYPE, required: true })

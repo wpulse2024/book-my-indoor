@@ -46,6 +46,7 @@ export class UsersService {
     const user = await this.userModel
       .findById(id)
       .populate({ path: 'roles', populate: { path: 'permissions' } })
+      .populate('organization')
       .lean()
       .exec();
     if (!user) throw new NotFoundException('User not found');

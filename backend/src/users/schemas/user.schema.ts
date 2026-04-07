@@ -26,6 +26,9 @@ export class User {
   })
   roles!: Types.ObjectId[];
 
+  @Prop({ type: Types.ObjectId, ref: 'Organization', default: null })
+  organization?: Types.ObjectId;
+
   @Prop({ default: true })
   isActive!: boolean;
 }
