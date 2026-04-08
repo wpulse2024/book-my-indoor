@@ -63,6 +63,7 @@ export class SeederService {
     const permissions = await this.seedPermissions();
     const adminRole = await this.seedAdminRole(permissions);
     await this.seedAgentRole();
+    await this.seedUserRole();
     await this.seedAdminUser(adminRole._id as any);
 
     this.logger.log('Seed complete.');
@@ -134,6 +135,26 @@ export class SeederService {
     );
 
     this.logger.log(`Role 'agent' ready.`);
+  }
+
+  // ─── User role ──────────────────────────────────────────────────────────────
+
+  private async seedUserRole(): Promise<void> {
+    this.logger.log(`Seeding role: 'user'…`);
+
+    await this.roleModel.findOneAndUpdate(
+      { name: 'user' },
+      {
+        $setOnInsert: {
+          name: 'user',
+          description: 'Default role assigned to all registered end users',
+          permissions: [],
+        },
+      },
+      { upsert: true, new: true },
+    );
+
+    this.logger.log(`Role 'user' ready.`);
   }
 
   // ─── Admin user ─────────────────────────────────────────────────────────────

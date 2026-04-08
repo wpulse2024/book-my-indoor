@@ -6,6 +6,8 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
+import { OtpService } from '../otp/otp.service';
+import { OtpType } from '../otp/schemas/otp.schema';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import type { JwtPayload } from './strategies/jwt.strategy';
@@ -15,10 +17,23 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly otpService: OtpService,
   ) {}
 
   async register(dto: RegisterDto) {
-    return this.usersService.create(dto);
+    await this.usersService.create(dto as any);
+    await this.otpService.createOtp(dto.phone, OtpType.REGISTER, +(process.env.OTP_EXPIRY_MINUTES || 0));
+    return { message: 'Registration successful. OTP sent to your phone.' };
+  }
+
+  async verifyRegisterOtp(phone: string, otp: string) {
+    await this.otpService.verifyOtp(phone, otp, OtpType.REGISTER);
+    await this.usersService.activateUser(phone);
+
+    const user = await this.usersService.findByPhone(phone);
+    if (!user) throw new NotFoundException('User not found');
+
+    return this.issueToken(user);
   }
 
   async login(dto: LoginDto) {
@@ -28,16 +43,37 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isMatch = await bcrypt.compare(dto.password, user.password);
+    if (dto.isOtpLogin) {
+      await this.otpService.createOtp(
+        user.phone,
+        OtpType.LOGIN,
+        +(process.env.OTP_EXPIRY_MINUTES || 10),
+      );
+      return { message: 'OTP sent to your phone.' };
+    }
+
+    const isMatch = await bcrypt.compare(dto.password!, user.password || '');
     if (!isMatch) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    return this.issueToken(user);
+  }
+
+  async verifyLoginOtp(phone: string, otp: string) {
+    await this.otpService.verifyOtp(phone, otp, OtpType.LOGIN);
+
+    const user = await this.usersService.findByPhone(phone);
+    if (!user) throw new NotFoundException('User not found');
+
+    return this.issueToken(user);
+  }
+
+  private issueToken(user: any) {
     const payload: JwtPayload = {
       sub: (user._id as any).toString(),
       phone: user.phone,
     };
-
     return {
       accessToken: this.jwtService.sign(payload),
       user: {
@@ -71,5 +107,17 @@ export class AuthService {
         roles: user.roles,
       },
     };
+  }
+
+  async validateUser(identifier: string) {
+    const user = await this.usersService.findByIdentifier(identifier);
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    return {
+      isOtpLogin: !!!user.password
+    }
   }
 }

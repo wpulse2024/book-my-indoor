@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './schemas/user.schema';
+import { Role, RoleDocument } from '../roles/schemas/role.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AssignRolesDto } from './dto/assign-roles.dto';
 
@@ -14,6 +15,7 @@ import { AssignRolesDto } from './dto/assign-roles.dto';
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(Role.name) private readonly roleModel: Model<RoleDocument>,
   ) {}
 
   async create(dto: CreateUserDto): Promise<Omit<User, 'password'>> {
@@ -27,8 +29,14 @@ export class UsersService {
       throw new ConflictException('Phone or email already registered');
     }
 
-    const hashed = await bcrypt.hash(dto.password, 10);
-    const user = await this.userModel.create({ ...dto, password: hashed });
+    const userRole = await this.roleModel.findOne({ name: 'user' }).lean().exec();
+
+    const user = await this.userModel.create({
+      ...dto,
+      password: dto.password ? (await bcrypt.hash(dto.password, 10)) : undefined,
+      isActive: false,
+      roles: userRole ? [userRole._id] : [],
+    });
 
     const { password: _, ...result } = user.toObject();
     return result;
@@ -73,6 +81,14 @@ export class UsersService {
       .exec();
     if (!user) throw new NotFoundException('User not found');
     return user;
+  }
+
+  async findByPhone(phone: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ phone }).select('+password').exec();
+  }
+
+  async activateUser(phone: string): Promise<void> {
+    await this.userModel.updateOne({ phone }, { $set: { isActive: true } });
   }
 
   async remove(id: string): Promise<void> {
