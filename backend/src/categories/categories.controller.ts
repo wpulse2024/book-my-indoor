@@ -1,10 +1,24 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermissions } from '../common/decorators/permissions.decorator';
+import { categoryImageUploadOptions } from '../common/upload.config';
 
 @Controller('categories')
 export class CategoriesController {
@@ -13,8 +27,13 @@ export class CategoriesController {
   @Post()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions('categories:create')
-  create(@Body() dto: CreateCategoryDto) {
-    return this.categoriesService.create(dto);
+  @UseInterceptors(FileInterceptor('image', categoryImageUploadOptions))
+  create(
+    @Body() dto: CreateCategoryDto,
+    @UploadedFile() image?: Express.Multer.File,
+  ) {
+    if (!image) throw new BadRequestException('Category image is required');
+    return this.categoriesService.create(dto, image.path);
   }
 
   // Public — anyone can browse categories (discovery page)
@@ -31,8 +50,13 @@ export class CategoriesController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions('categories:update')
-  update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
-    return this.categoriesService.update(id, dto);
+  @UseInterceptors(FileInterceptor('image', categoryImageUploadOptions))
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateCategoryDto,
+    @UploadedFile() image?: Express.Multer.File,
+  ) {
+    return this.categoriesService.update(id, dto, image?.path);
   }
 
   @Delete(':id')

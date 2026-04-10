@@ -17,10 +17,6 @@ export class UpdateOrganizationDto {
 
   @IsString()
   @IsOptional()
-  logo?: string;
-
-  @IsString()
-  @IsOptional()
   place?: string;
 
   @IsString()

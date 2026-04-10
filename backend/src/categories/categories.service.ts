@@ -12,10 +12,10 @@ export class CategoriesService {
     private readonly categoryModel: Model<CategoryDocument>,
   ) {}
 
-  async create(dto: CreateCategoryDto): Promise<CategoryDocument> {
+  async create(dto: CreateCategoryDto, imagePath: string): Promise<CategoryDocument> {
     const existing = await this.categoryModel.findOne({ title: dto.title });
     if (existing) throw new ConflictException(`Category '${dto.title}' already exists`);
-    return this.categoryModel.create(dto);
+    return this.categoryModel.create({ ...dto, image: imagePath });
   }
 
   findAll(): Promise<CategoryDocument[]> {
@@ -28,7 +28,7 @@ export class CategoriesService {
     return cat;
   }
 
-  async update(id: string, dto: UpdateCategoryDto): Promise<CategoryDocument> {
+  async update(id: string, dto: UpdateCategoryDto, imagePath?: string): Promise<CategoryDocument> {
     if (dto.title) {
       const conflict = await this.categoryModel.findOne({
         title: dto.title,
@@ -37,7 +37,7 @@ export class CategoriesService {
       if (conflict) throw new ConflictException(`Category '${dto.title}' already exists`);
     }
     const cat = await this.categoryModel
-      .findByIdAndUpdate(id, dto, { new: true })
+      .findByIdAndUpdate(id, { ...dto, ...(imagePath && { image: imagePath }) }, { new: true })
       .lean()
       .exec();
     if (!cat) throw new NotFoundException('Category not found');

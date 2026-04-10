@@ -26,7 +26,7 @@ export class OrganizationsService {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async create(dto: CreateOrganizationDto): Promise<OrganizationDocument> {
+  async create(dto: CreateOrganizationDto, logoPath?: string): Promise<OrganizationDocument> {
     const existing = await this.orgModel.findOne({ title: dto.title });
     if (existing) {
       throw new ConflictException(`Organization '${dto.title}' already exists`);
@@ -61,6 +61,9 @@ export class OrganizationsService {
       commissionType: dto.commissionType,
       commissionAmount: dto.commissionAmount,
       agentId: agentUser._id,
+      ...(logoPath && { logo: logoPath }),
+      ...(dto.place && { place: dto.place }),
+      ...(dto.description && { description: dto.description }),
     });
 
     await this.userModel.findByIdAndUpdate(agentUser._id, {
@@ -91,6 +94,7 @@ export class OrganizationsService {
   async update(
     id: string,
     dto: UpdateOrganizationDto,
+    logoPath?: string,
   ): Promise<OrganizationDocument> {
     if (dto.title) {
       const conflict = await this.orgModel.findOne({
@@ -103,7 +107,7 @@ export class OrganizationsService {
     }
 
     const org = await this.orgModel
-      .findByIdAndUpdate(id, dto, { new: true })
+      .findByIdAndUpdate(id, { ...dto, ...(logoPath && { logo: logoPath }) }, { new: true })
       .populate({ path: 'agentId', select: '-password' })
       .lean()
       .exec();
