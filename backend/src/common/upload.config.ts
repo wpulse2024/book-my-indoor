@@ -52,3 +52,8 @@ export const categoryImageUploadOptions = imageUploadOptions(
   './uploads/categories',
   'image',
 );
+
+export const venueImagesUploadOptions = imageUploadOptions(
+  './uploads/venues',
+  'venue',
+);

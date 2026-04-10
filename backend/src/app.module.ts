@@ -7,6 +7,8 @@ import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { CategoriesModule } from './categories/categories.module';
+import { VenueFeaturesModule } from './venue-features/venue-features.module';
+import { VenuesModule } from './venues/venues.module';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { CategoriesModule } from './categories/categories.module';
     PermissionsModule,
     OrganizationsModule,
     CategoriesModule,
+    VenueFeaturesModule,
+    VenuesModule,
   ],
 })
 export class AppModule {}

@@ -41,6 +41,14 @@ const SYSTEM_PERMISSIONS: Array<{ name: string; description: string }> = [
   { name: 'categories:create', description: 'Create a new category' },
   { name: 'categories:update', description: 'Update a category' },
   { name: 'categories:delete', description: 'Delete a category' },
+  // venue-features resource
+  { name: 'venue-features:create', description: 'Create a new venue feature' },
+  { name: 'venue-features:update', description: 'Update a venue feature' },
+  { name: 'venue-features:delete', description: 'Delete a venue feature' },
+  // venues resource
+  { name: 'venues:create', description: 'Create a new venue' },
+  { name: 'venues:update', description: 'Update a venue' },
+  { name: 'venues:delete', description: 'Delete a venue' },
 ];
 
 const ADMIN_ROLE_NAME = 'admin';
