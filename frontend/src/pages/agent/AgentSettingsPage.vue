@@ -24,9 +24,11 @@ const orgForm = reactive({
   title: '',
   commissionType: 'percentage' as 'fixed' | 'percentage',
   commissionAmount: 0,
+  logo: '',
+  place: '',
+  description: '',
 })
 
-// Agent (user) info — read-only display (update not yet supported by backend)
 const agentInfo = computed(() => ({
   phone: auth.user?.phone ?? '—',
   email: auth.user?.email ?? '—',
@@ -46,6 +48,9 @@ async function loadOrg() {
     orgForm.title = res.data.title ?? ''
     orgForm.commissionType = res.data.commissionType ?? 'percentage'
     orgForm.commissionAmount = res.data.commissionAmount ?? 0
+    orgForm.logo = res.data.logo ?? ''
+    orgForm.place = res.data.place ?? ''
+    orgForm.description = res.data.description ?? ''
   } catch (e) {
     orgError.value = getMsg(e, 'Failed to load organization details.')
   } finally {
@@ -64,6 +69,9 @@ async function saveOrg() {
       title: orgForm.title,
       commissionType: orgForm.commissionType,
       commissionAmount: orgForm.commissionAmount,
+      logo: orgForm.logo || undefined,
+      place: orgForm.place || undefined,
+      description: orgForm.description || undefined,
     })
     orgSuccess.value = 'Organization settings saved successfully.'
     setTimeout(() => { orgSuccess.value = '' }, 4000)
@@ -97,7 +105,7 @@ onMounted(loadOrg)
     <!-- ── Agent Profile (read-only) ─────────────────────────────────────── -->
     <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
       <div class="flex items-center gap-4 mb-5">
-        <div class="w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 bg-indigo-100 flex items-center justify-center">
+        <div class="w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 bg-indigo-100">
           <img
             :src="auth.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(auth.user?.name || auth.user?.phone || 'A')}&background=4f46e5&color=fff&bold=true&size=120`"
             class="w-full h-full object-cover"
@@ -136,8 +144,8 @@ onMounted(loadOrg)
     <div class="bg-white rounded-2xl border border-gray-100 p-6">
       <div class="flex items-center justify-between mb-5">
         <div>
-          <h2 class="font-black text-gray-900">Organization Settings</h2>
-          <p class="text-xs text-gray-400 mt-0.5">Update your organization name and commission configuration.</p>
+          <h2 class="font-black text-gray-900">Organization Profile</h2>
+          <p class="text-xs text-gray-400 mt-0.5">Update your organization details and commission configuration.</p>
         </div>
         <span v-if="orgId" class="text-[10px] font-bold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg font-mono">
           ID: {{ orgId.slice(-8) }}
@@ -147,10 +155,12 @@ onMounted(loadOrg)
       <!-- Loading skeleton -->
       <div v-if="isLoadingOrg" class="space-y-4">
         <div class="h-10 bg-gray-100 rounded-xl animate-pulse" />
+        <div class="h-10 bg-gray-100 rounded-xl animate-pulse" />
         <div class="grid grid-cols-2 gap-4">
           <div class="h-10 bg-gray-100 rounded-xl animate-pulse" />
           <div class="h-10 bg-gray-100 rounded-xl animate-pulse" />
         </div>
+        <div class="h-20 bg-gray-100 rounded-xl animate-pulse" />
       </div>
 
       <!-- No org linked -->
@@ -164,23 +174,78 @@ onMounted(loadOrg)
 
       <!-- Form -->
       <form v-else @submit.prevent="saveOrg" class="space-y-5">
-        <!-- Title -->
+
+        <!-- Logo + Name row -->
+        <div class="flex items-start gap-4">
+          <!-- Logo preview -->
+          <div class="flex-shrink-0">
+            <div class="w-16 h-16 rounded-2xl border-2 border-dashed border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+              <img
+                v-if="orgForm.logo"
+                :src="orgForm.logo"
+                alt="Organization logo"
+                class="w-full h-full object-cover"
+                @error="orgForm.logo = ''"
+              />
+              <svg v-else class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+          </div>
+          <!-- Name + logo URL -->
+          <div class="flex-1 space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Organization Name <span class="text-red-400">*</span></label>
+              <input
+                v-model="orgForm.title"
+                type="text"
+                placeholder="e.g. Kinetic Sports Ltd."
+                class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition bg-white"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Logo URL <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+              <input
+                v-model="orgForm.logo"
+                type="url"
+                placeholder="https://example.com/logo.png"
+                class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition bg-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Place -->
         <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Organization Name</label>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Place / Address
+            </span>
+          </label>
           <input
-            v-model="orgForm.title"
+            v-model="orgForm.place"
             type="text"
-            placeholder="e.g. Kinetic Sports Ltd."
+            placeholder="e.g. Gulshan 2, Dhaka, Bangladesh"
             class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition bg-white"
           />
         </div>
 
-        <!-- Commission -->
+        <!-- Description -->
         <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Commission</label>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Description <span class="text-gray-400 font-normal normal-case">(what does your org offer?)</span></label>
+          <textarea
+            v-model="orgForm.description"
+            rows="3"
+            placeholder="e.g. We manage 4 premium badminton courts and 2 futsal arenas in central Dhaka, open daily from 6 AM to midnight."
+            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition bg-white resize-none leading-relaxed"
+          />
+        </div>
+
+        <!-- Divider -->
+        <div class="border-t border-gray-100 pt-1">
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Commission Configuration</p>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs text-gray-400 mb-1">Type</label>
+              <label class="block text-xs text-gray-500 font-medium mb-1.5">Type</label>
               <select
                 v-model="orgForm.commissionType"
                 class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 outline-none focus:border-indigo-400 bg-white cursor-pointer transition"
@@ -190,11 +255,11 @@ onMounted(loadOrg)
               </select>
             </div>
             <div>
-              <label class="block text-xs text-gray-400 mb-1">
+              <label class="block text-xs text-gray-500 font-medium mb-1.5">
                 Amount <span class="text-gray-400">{{ orgForm.commissionType === 'percentage' ? '(%)' : '(৳)' }}</span>
               </label>
               <div class="relative">
-                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium select-none">
                   {{ orgForm.commissionType === 'percentage' ? '%' : '৳' }}
                 </span>
                 <input
@@ -216,26 +281,14 @@ onMounted(loadOrg)
         </div>
 
         <!-- Feedback messages -->
-        <Transition
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="opacity-0 -translate-y-1"
-          enter-to-class="opacity-100 translate-y-0"
-          leave-active-class="transition duration-150"
-          leave-to-class="opacity-0"
-        >
+        <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-150" leave-to-class="opacity-0">
           <div v-if="orgError" class="flex items-start gap-2.5 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
             <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             {{ orgError }}
           </div>
         </Transition>
 
-        <Transition
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="opacity-0 -translate-y-1"
-          enter-to-class="opacity-100 translate-y-0"
-          leave-active-class="transition duration-150"
-          leave-to-class="opacity-0"
-        >
+        <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-150" leave-to-class="opacity-0">
           <div v-if="orgSuccess" class="flex items-center gap-2.5 px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 font-medium">
             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
             {{ orgSuccess }}
@@ -244,19 +297,10 @@ onMounted(loadOrg)
 
         <!-- Actions -->
         <div class="flex items-center justify-end gap-3 pt-1 border-t border-gray-100">
-          <button
-            type="button"
-            @click="loadOrg"
-            :disabled="isLoadingOrg || isSavingOrg"
-            class="px-4 py-2.5 border border-gray-200 text-gray-600 text-sm font-bold rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
+          <button type="button" @click="loadOrg" :disabled="isLoadingOrg || isSavingOrg" class="px-4 py-2.5 border border-gray-200 text-gray-600 text-sm font-bold rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50">
             Reset
           </button>
-          <button
-            type="submit"
-            :disabled="isSavingOrg || !orgForm.title"
-            class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-colors"
-          >
+          <button type="submit" :disabled="isSavingOrg || !orgForm.title" class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-colors">
             <svg v-if="isSavingOrg" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
             {{ isSavingOrg ? 'Saving...' : 'Save Changes' }}
           </button>

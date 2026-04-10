@@ -155,4 +155,23 @@ export const organizationApi = {
     http.delete(`/organizations/${id}`),
 }
 
+// ─── Categories ──────────────────────────────────────────────────────────────
+
+export const categoryApi = {
+  list: () =>
+    http.get<any[]>('/categories'),
+
+  get: (id: string) =>
+    http.get<any>(`/categories/${id}`),
+
+  create: (data: { title: string; image: string }) =>
+    http.post<any>('/categories', data),
+
+  update: (id: string, data: Partial<{ title: string; image: string }>) =>
+    http.patch<any>(`/categories/${id}`, data),
+
+  remove: (id: string) =>
+    http.delete(`/categories/${id}`),
+}
+
 export default http

@@ -37,6 +37,10 @@ const SYSTEM_PERMISSIONS: Array<{ name: string; description: string }> = [
   { name: 'organizations:singleRead', description: 'Read a single organization' },
   { name: 'organizations:update', description: 'Update an organization' },
   { name: 'organizations:delete', description: 'Delete an organization' },
+  // categories resource
+  { name: 'categories:create', description: 'Create a new category' },
+  { name: 'categories:update', description: 'Update a category' },
+  { name: 'categories:delete', description: 'Delete a category' },
 ];
 
 const ADMIN_ROLE_NAME = 'admin';

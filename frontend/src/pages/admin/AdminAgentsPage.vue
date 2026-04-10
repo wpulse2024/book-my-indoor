@@ -19,6 +19,9 @@ const form = ref({
   commissionType: 'percentage' as 'fixed' | 'percentage',
   commissionAmount: 10,
   agent: { phone: '', email: '', password: '' },
+  logo: '',
+  place: '',
+  description: '',
 })
 const formError = ref('')
 
@@ -61,12 +64,17 @@ async function submitInvite() {
   isSubmitting.value = true
   try {
     const res = await organizationApi.create({
-      ...form.value,
+      title: form.value.title,
+      commissionType: form.value.commissionType,
+      commissionAmount: form.value.commissionAmount,
       agent: {
         phone: form.value.agent.phone,
         email: form.value.agent.email || undefined,
         password: form.value.agent.password,
       },
+      logo: form.value.logo || undefined,
+      place: form.value.place || undefined,
+      description: form.value.description || undefined,
     })
     orgs.value.unshift(res.data)
     showInviteModal.value = false
@@ -98,6 +106,9 @@ function resetForm() {
     commissionType: 'percentage',
     commissionAmount: 10,
     agent: { phone: '', email: '', password: '' },
+    logo: '',
+    place: '',
+    description: '',
   }
   formError.value = ''
 }
@@ -215,10 +226,17 @@ onMounted(loadOrgs)
             <!-- Agent name -->
             <td class="px-5 py-4">
               <div class="flex items-center gap-3">
-                <img :src="agentAvatar(org)" :alt="org.title" class="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                <div class="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+                  <img
+                    :src="org.logo || agentAvatar(org)"
+                    :alt="org.title"
+                    class="w-full h-full object-cover"
+                    @error="(e: any) => e.target.src = agentAvatar(org)"
+                  />
+                </div>
                 <div>
                   <p class="text-sm font-bold text-gray-900">{{ org.title }}</p>
-                  <p class="text-xs text-gray-400">{{ org.agentId?.phone || '—' }}</p>
+                  <p class="text-xs text-gray-400">{{ org.place || org.agentId?.phone || '—' }}</p>
                 </div>
               </div>
             </td>
@@ -351,6 +369,24 @@ onMounted(loadOrgs)
                 <div>
                   <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Password</label>
                   <input v-model="form.agent.password" type="password" placeholder="Min. 6 characters" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition" />
+                </div>
+
+                <!-- Place -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Place / Address <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+                  <input v-model="form.place" type="text" placeholder="e.g. Gulshan 2, Dhaka" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition" />
+                </div>
+
+                <!-- Logo URL -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Logo URL <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+                  <input v-model="form.logo" type="url" placeholder="https://example.com/logo.png" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition" />
+                </div>
+
+                <!-- Description -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Description <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+                  <textarea v-model="form.description" rows="2" placeholder="What does this organization manage?" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition resize-none" />
                 </div>
 
                 <!-- Commission -->

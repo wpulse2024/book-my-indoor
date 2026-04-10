@@ -78,6 +78,11 @@ const router = createRouter({
           component: () => import('@/pages/admin/AdminVenuesPage.vue'), // placeholder
         },
         {
+          path: 'categories',
+          name: 'admin-categories',
+          component: () => import('@/pages/admin/AdminCategoriesPage.vue'),
+        },
+        {
           path: 'settings',
           name: 'admin-settings',
           component: () => import('@/pages/admin/AdminVenuesPage.vue'), // placeholder
