@@ -21,6 +21,15 @@ export class Organization {
 
   @Prop({ type: Number, required: true })
   commissionAmount!: number;
+
+  @Prop({ type: String, trim: true })
+  logo?: string;
+
+  @Prop({ type: String, trim: true })
+  place?: string;
+
+  @Prop({ type: String, trim: true })
+  description?: string;
 }
 
 export const OrganizationSchema = SchemaFactory.createForClass(Organization);

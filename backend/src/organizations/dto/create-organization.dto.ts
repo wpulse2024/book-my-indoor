@@ -43,4 +43,16 @@ export class CreateOrganizationDto {
   @ValidateNested()
   @Type(() => AgentDto)
   agent!: AgentDto;
+
+  @IsString()
+  @IsOptional()
+  logo?: string;
+
+  @IsString()
+  @IsOptional()
+  place?: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
 }

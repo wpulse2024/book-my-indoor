@@ -123,4 +123,36 @@ export const walletApi = {
     }),
 }
 
+// ─── Organizations (Agents) ──────────────────────────────────────────────────
+
+export const organizationApi = {
+  list: () =>
+    http.get<any[]>('/organizations'),
+
+  get: (id: string) =>
+    http.get<any>(`/organizations/${id}`),
+
+  create: (data: {
+    title: string
+    commissionType: 'fixed' | 'percentage'
+    commissionAmount: number
+    agent: { phone: string; email?: string; password: string }
+    logo?: string
+    place?: string
+    description?: string
+  }) => http.post<any>('/organizations', data),
+
+  update: (id: string, data: Partial<{
+    title: string
+    commissionType: string
+    commissionAmount: number
+    logo: string
+    place: string
+    description: string
+  }>) => http.patch<any>(`/organizations/${id}`, data),
+
+  remove: (id: string) =>
+    http.delete(`/organizations/${id}`),
+}
+
 export default http

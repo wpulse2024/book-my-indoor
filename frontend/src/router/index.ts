@@ -33,6 +33,19 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
 
+    // ── Agent app ──────────────────────────────────────────────────────────────
+    {
+      path: '/agent',
+      component: () => import('@/layouts/AgentLayout.vue'),
+      meta: { requiresAuth: true, requiresAgent: true },
+      children: [
+        { path: '', name: 'agent-dashboard', component: () => import('@/pages/agent/AgentDashboardPage.vue') },
+        { path: 'venues',   name: 'agent-venues',   component: () => import('@/pages/agent/AgentDashboardPage.vue') },
+        { path: 'bookings', name: 'agent-bookings', component: () => import('@/pages/agent/AgentDashboardPage.vue') },
+        { path: 'settings', name: 'agent-settings', component: () => import('@/pages/agent/AgentSettingsPage.vue') },
+      ],
+    },
+
     // ── Admin app ──────────────────────────────────────────────────────────────
     {
       path: '/admin',
@@ -52,7 +65,7 @@ const router = createRouter({
         {
           path: 'agents',
           name: 'admin-agents',
-          component: () => import('@/pages/admin/AdminVenuesPage.vue'), // placeholder
+          component: () => import('@/pages/admin/AdminAgentsPage.vue'),
         },
         {
           path: 'users',
@@ -90,9 +103,13 @@ router.beforeEach(async (to) => {
     return { name: 'home' }
   }
 
+  if (to.meta.requiresAgent && !auth.isAgent) {
+    return { name: 'home' }
+  }
+
   if (to.meta.guestOnly && auth.isLoggedIn) {
-    // Redirect admin users to admin app
     if (auth.isAdmin) return { name: 'admin-venues' }
+    if (auth.isAgent) return { name: 'agent-dashboard' }
     return { name: 'home' }
   }
 

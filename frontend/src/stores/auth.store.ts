@@ -29,6 +29,12 @@ export const useAuthStore = defineStore('auth', () => {
     if (!roles) return false
     return roles.some((r: any) => (typeof r === 'string' ? r : r?.name) === 'admin')
   })
+  const isAgent = computed(() => {
+    if (!user.value) return false
+    const roles = (user.value as any).roles
+    if (!roles) return false
+    return roles.some((r: any) => (typeof r === 'string' ? r : r?.name) === 'agent')
+  })
 
   function setToken(t: string) {
     token.value = t
@@ -121,6 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
     isInitialized,
     isLoggedIn,
     isAdmin,
+    isAgent,
     fetchMe,
     loginWithOtp,
     loginWithPassword,

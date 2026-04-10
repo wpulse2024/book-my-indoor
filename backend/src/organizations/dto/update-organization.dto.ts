@@ -14,4 +14,16 @@ export class UpdateOrganizationDto {
   @IsPositive()
   @IsOptional()
   commissionAmount?: number;
+
+  @IsString()
+  @IsOptional()
+  logo?: string;
+
+  @IsString()
+  @IsOptional()
+  place?: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
 }
