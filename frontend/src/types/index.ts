@@ -17,6 +17,19 @@ export type PaymentStatus = 'unpaid' | 'paid' | 'refunded'
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
+export interface PermissionSummary {
+  id: string
+  name: string
+  description?: string
+}
+
+export interface UserRole {
+  id: string
+  name: string
+  description?: string
+  permissions?: PermissionSummary[]
+}
+
 export interface User {
   id: string
   name: string
@@ -25,6 +38,7 @@ export interface User {
   avatar: string | null
   walletBalance: number
   autoCreated: boolean
+  roles: UserRole[]
   createdAt: string
 }
 

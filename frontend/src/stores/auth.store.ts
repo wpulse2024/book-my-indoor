@@ -23,6 +23,12 @@ export const useAuthStore = defineStore('auth', () => {
   const isInitialized = ref(USE_MOCK ? true : false)
 
   const isLoggedIn = computed(() => !!token.value && !!user.value)
+  const isAdmin = computed(() => {
+    if (!user.value) return false
+    const roles = (user.value as any).roles
+    if (!roles) return false
+    return roles.some((r: any) => (typeof r === 'string' ? r : r?.name) === 'admin')
+  })
 
   function setToken(t: string) {
     token.value = t
@@ -41,6 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
       walletBalance: data.walletBalance ?? 0,
       autoCreated: data.autoCreated ?? false,
       createdAt: data.createdAt ?? new Date().toISOString(),
+      roles: data.roles ?? [],
     }
   }
 
@@ -113,6 +120,7 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading,
     isInitialized,
     isLoggedIn,
+    isAdmin,
     fetchMe,
     loginWithOtp,
     loginWithPassword,

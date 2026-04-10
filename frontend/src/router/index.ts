@@ -32,6 +32,45 @@ const router = createRouter({
       component: () => import('@/pages/MyBookingsPage.vue'),
       meta: { requiresAuth: true },
     },
+
+    // ── Admin app ──────────────────────────────────────────────────────────────
+    {
+      path: '/admin',
+      component: () => import('@/layouts/AdminLayout.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+      children: [
+        {
+          path: '',
+          name: 'admin-dashboard',
+          redirect: { name: 'admin-venues' },
+        },
+        {
+          path: 'venues',
+          name: 'admin-venues',
+          component: () => import('@/pages/admin/AdminVenuesPage.vue'),
+        },
+        {
+          path: 'agents',
+          name: 'admin-agents',
+          component: () => import('@/pages/admin/AdminVenuesPage.vue'), // placeholder
+        },
+        {
+          path: 'users',
+          name: 'admin-users',
+          component: () => import('@/pages/admin/AdminVenuesPage.vue'), // placeholder
+        },
+        {
+          path: 'bookings',
+          name: 'admin-bookings',
+          component: () => import('@/pages/admin/AdminVenuesPage.vue'), // placeholder
+        },
+        {
+          path: 'settings',
+          name: 'admin-settings',
+          component: () => import('@/pages/admin/AdminVenuesPage.vue'), // placeholder
+        },
+      ],
+    },
   ],
 })
 
@@ -44,13 +83,16 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
-    return {
-      name: 'login',
-      query: { redirect: to.fullPath },
-    }
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
+  if (to.meta.requiresAdmin && !auth.isAdmin) {
+    return { name: 'home' }
   }
 
   if (to.meta.guestOnly && auth.isLoggedIn) {
+    // Redirect admin users to admin app
+    if (auth.isAdmin) return { name: 'admin-venues' }
     return { name: 'home' }
   }
 
