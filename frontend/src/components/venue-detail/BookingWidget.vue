@@ -11,7 +11,6 @@ const venue = {
 }
 
 const selectedDate = ref('2023-10-24')
-const selectedSlot = ref('08:00 AM\n$35')
 
 const slots = [
   { time: '08:00 AM', price: '$35', full: false },

@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 
 const current = ref(1)
-const total = 12
 
 const pages = [1, 2, 3, '...', 12]
 </script>

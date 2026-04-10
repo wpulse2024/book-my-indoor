@@ -12,8 +12,16 @@ import type {
   Review,
 } from '@/types'
 
+function createApiBaseUrl() {
+  const explicitUrl = import.meta.env.VITE_API_BASE_URL
+  if (explicitUrl) return explicitUrl
+
+  const backendBaseUrl = import.meta.env.VITE_BACKEND_BASE_URL ?? 'http://localhost:8000/'
+  return new URL('api/v1', backendBaseUrl).toString().replace(/\/$/, '')
+}
+
 const http: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api/v1',
+  baseURL: createApiBaseUrl(),
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -28,7 +36,7 @@ http.interceptors.request.use((config) => {
 http.interceptors.response.use(
   (res: AxiosResponse) => res,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !window.location.pathname.startsWith('/login')) {
       localStorage.removeItem('bmi_token')
       window.location.href = '/login'
     }
@@ -39,24 +47,22 @@ http.interceptors.response.use(
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 export const authApi = {
-  sendOtp: (phone: string) =>
-    http.post<ApiSuccess<{ expires: number }>>('/auth/otp/send', { phone }),
+  validateUser: (identifier: string) =>
+    http.post<{ isOtpLogin: boolean }>('/auth/validate-user', { identifier }),
 
-  verifyOtp: (phone: string, otp: string) =>
-    http.post<ApiSuccess<{ token: string; user: User }>>('/auth/otp/verify', { phone, otp }),
+  verifyLoginOtp: (phone: string, otp: string) =>
+    http.post<{ accessToken: string; user: Partial<User> }>('/auth/verify-otp/login', { phone, otp }),
 
   register: (data: { name: string; email: string; phone: string; password: string }) =>
-    http.post<ApiSuccess<{ token: string; user: User }>>('/auth/register', data),
+    http.post('/auth/register', data),
 
-  login: (data: { email: string; password: string }) =>
-    http.post<ApiSuccess<{ token: string; user: User }>>('/auth/login', data),
+  login: (data: { identifier: string; password?: string; isOtpLogin: boolean }) =>
+    http.post<{ message?: string; accessToken?: string; user?: Partial<User> }>('/auth/login', data),
 
-  logout: () => http.post('/auth/logout'),
+  profile: () => http.get<Partial<User>>('/auth/profile'),
 
-  me: () => http.get<ApiSuccess<User>>('/auth/me'),
-
-  updateProfile: (data: Partial<User>) =>
-    http.put<ApiSuccess<User>>('/user/profile', data),
+  updateProfile: (_data: Partial<User>) =>
+    Promise.reject(new Error('Profile update endpoint is not implemented in the backend yet')),
 }
 
 // ─── Venues ──────────────────────────────────────────────────────────────────

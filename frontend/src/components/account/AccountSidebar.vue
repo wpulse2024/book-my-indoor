@@ -2,14 +2,6 @@
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const isActive = (name: string) => route.name === name
-
-const navItems = [
-  { name: 'account-profile', label: 'Profile Settings', icon: 'user' },
-  { name: 'account-payment', label: 'Payment Methods', icon: 'credit-card' },
-  { name: 'account-bookings', label: 'Membership', icon: 'membership' },
-  { name: 'account-privacy', label: 'Privacy', icon: 'shield' },
-]
 </script>
 
 <template>

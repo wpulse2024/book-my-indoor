@@ -3,13 +3,11 @@ import { ref, computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { useBookingStore } from '@/stores/booking.store'
-import AuthModal from '@/components/common/AuthModal.vue'
 
 const auth = useAuthStore()
 const bookingStore = useBookingStore()
 const router = useRouter()
 const mobileOpen = ref(false)
-const showAuth = ref(false)
 
 const navLinks = [
   { name: 'Find Venues', to: '/venues' },
@@ -21,8 +19,8 @@ const walletBalance = computed(() =>
 )
 
 function openAuth() {
-  showAuth.value = true
   mobileOpen.value = false
+  router.push('/login')
 }
 
 async function handleLogout() {
@@ -109,8 +107,6 @@ if (auth.isLoggedIn) bookingStore.fetchWallet()
       </div>
     </Transition>
   </header>
-
-  <AuthModal v-if="showAuth" @close="showAuth = false" />
 </template>
 
 <style lang="scss" scoped>

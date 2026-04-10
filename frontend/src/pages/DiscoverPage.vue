@@ -84,7 +84,7 @@ const venues = [
           <!-- Grid: 2 cols, with concierge card in 4th slot -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <DiscoverVenueCard
-              v-for="(venue, i) in venues"
+              v-for="venue in venues"
               :key="venue.name"
               v-bind="venue"
             />

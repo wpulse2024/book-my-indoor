@@ -113,7 +113,7 @@ export class AuthService {
     const user = await this.usersService.findByIdentifier(identifier);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new NotFoundException('No account found with that phone number.');
     }
 
     return {

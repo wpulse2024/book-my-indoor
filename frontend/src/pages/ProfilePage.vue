@@ -60,7 +60,7 @@ function cancelEdit() {
             <div class="profile-card__meta-item">
               <span class="profile-card__meta-label">Wallet</span>
               <RouterLink to="/wallet" class="profile-card__meta-value profile-card__wallet-link">
-                ৳{{ (auth.user as {walletBalance?: number})?.walletBalance?.toFixed(2) ?? '0.00' }}
+                ৳{{ auth.user?.walletBalance?.toFixed(2) ?? '0.00' }}
               </RouterLink>
             </div>
           </div>

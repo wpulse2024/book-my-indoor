@@ -41,7 +41,7 @@ const SYSTEM_PERMISSIONS: Array<{ name: string; description: string }> = [
 
 const ADMIN_ROLE_NAME = 'admin';
 const ADMIN_EMAIL = 'admin@admin.com';
-const ADMIN_PHONE = '+10000000000';
+const ADMIN_PHONE = '+8801747102896';
 const ADMIN_PASSWORD = '123456';
 
 @Injectable()
