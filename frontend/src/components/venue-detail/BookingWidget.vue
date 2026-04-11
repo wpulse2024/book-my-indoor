@@ -1,34 +1,37 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import BookingModal from '@/components/BookingModal.vue'
+import { assetUrl } from '@/services/api'
+
+const props = defineProps<{
+  venue: any
+  lowestPrice: number
+}>()
 
 const showModal = ref(false)
 
-const venue = {
-  name: 'Titan Arena Complex',
-  tier: 'Pro Tier',
-  image: 'https://picsum.photos/seed/titan-main/800/500',
+const today = new Date().toISOString().split('T')[0]
+const selectedDate = ref(today)
+
+const slots = computed(() => props.venue?.slots ?? [])
+const selectedSlotId = ref<string>('')
+
+// Auto-select first slot when slots load
+const selectedSlot = computed(() =>
+  slots.value.find((s: any) => s._id === selectedSlotId.value) ?? slots.value[0] ?? null
+)
+
+function formatTime(t: string): string {
+  if (!t) return ''
+  const [h, m] = t.split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
-const selectedDate = ref('2023-10-24')
+const PLATFORM_FEE = 0
 
-const slots = [
-  { time: '08:00 AM', price: '$35', full: false },
-  { time: '08:00 AM', price: '$45', full: false },
-  { time: '10:00 AM', price: '$45', full: false },
-  { time: '02:00 PM', price: 'FULL', full: true },
-  { time: '06:00 PM', price: '$65', full: false },
-  { time: '08:00 PM', price: '$55', full: false },
-]
-
-const selectedSlotKey = ref('08:00 AM-$35')
-
-const sessionCost = computed(() => {
-  const s = slots.find(s => `${s.time}-${s.price}` === selectedSlotKey.value)
-  return s && !s.full ? parseFloat(s.price.replace('$', '')) : 35
-})
-const platformFee = 2.50
-const total = computed(() => sessionCost.value + platformFee)
+const sessionCost = computed(() => selectedSlot.value ? Number(selectedSlot.value.price) || 0 : 0)
+const total = computed(() => sessionCost.value + PLATFORM_FEE)
 
 const displayDate = computed(() => {
   if (!selectedDate.value) return 'Select date'
@@ -38,11 +41,23 @@ const displayDate = computed(() => {
 
 const dayName = computed(() => {
   if (!selectedDate.value) return ''
-  const d = new Date(selectedDate.value)
-  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
-  if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow, Thursday'
+  const d = new Date(selectedDate.value + 'T00:00:00')
   return d.toLocaleDateString('en-US', { weekday: 'long' })
 })
+
+const timeSlotLabel = computed(() => {
+  if (!selectedSlot.value) return ''
+  return `${formatTime(selectedSlot.value.startTime)} – ${formatTime(selectedSlot.value.endTime)}`
+})
+
+function openModal() {
+  if (slots.value.length) showModal.value = true
+}
+
+const modalVenue = computed(() => ({
+  name: props.venue?.title ?? '',
+  image: assetUrl(props.venue?.images?.[0]) || 'https://picsum.photos/seed/venue/800/500',
+}))
 </script>
 
 <template>
@@ -50,12 +65,14 @@ const dayName = computed(() => {
     <!-- Header -->
     <div class="px-5 pt-5 pb-4">
       <div class="flex items-center justify-between mb-1">
-        <p class="text-blue-200 text-xs font-bold uppercase tracking-widest">Hourly Rate Starts From</p>
+        <p class="text-blue-200 text-xs font-bold uppercase tracking-widest">Starts From</p>
         <span class="bg-green-400 text-green-900 text-xs font-black px-2 py-0.5 rounded-full uppercase tracking-wide">Live</span>
       </div>
       <div class="flex items-baseline gap-1">
-        <span class="text-white font-black text-4xl leading-none">$45.00</span>
-        <span class="text-blue-300 text-sm font-medium">/ hour</span>
+        <span class="text-white font-black text-4xl leading-none">
+          {{ lowestPrice > 0 ? '৳' + lowestPrice.toLocaleString() : '—' }}
+        </span>
+        <span class="text-blue-300 text-sm font-medium">/ slot</span>
       </div>
     </div>
 
@@ -72,81 +89,79 @@ const dayName = computed(() => {
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <input v-model="selectedDate" type="date" class="sr-only" />
+          <input v-model="selectedDate" type="date" :min="today" class="sr-only" />
         </label>
       </div>
 
       <!-- Available Slots -->
-      <div>
+      <div v-if="slots.length">
         <div class="flex items-center justify-between mb-3">
           <p class="text-xs font-black text-gray-400 uppercase tracking-widest">Available Slots</p>
-          <span class="text-blue-700 text-xs font-black flex items-center gap-1">
-            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-            </svg>
-            8 Slots Left
-          </span>
+          <span class="text-blue-700 text-xs font-black">{{ slots.length }} slots</span>
         </div>
-        <div class="grid grid-cols-3 gap-2">
+        <div class="grid grid-cols-2 gap-2">
           <button
             v-for="slot in slots"
-            :key="`${slot.time}-${slot.price}`"
-            :disabled="slot.full"
-            @click="!slot.full && (selectedSlotKey = `${slot.time}-${slot.price}`)"
+            :key="slot._id"
+            @click="selectedSlotId = slot._id"
             :class="[
-              'rounded-xl py-2.5 text-center transition-all text-xs font-bold leading-tight',
-              slot.full
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : selectedSlotKey === `${slot.time}-${slot.price}`
-                  ? 'bg-blue-700 text-white shadow-md'
-                  : 'border border-gray-200 text-gray-700 hover:border-blue-400'
+              'rounded-xl py-2.5 px-2 text-center transition-all text-xs font-bold leading-tight',
+              selectedSlotId === slot._id || (!selectedSlotId && slot === slots[0])
+                ? 'bg-blue-700 text-white shadow-md'
+                : 'border border-gray-200 text-gray-700 hover:border-blue-400'
             ]"
           >
-            <p>{{ slot.time }}</p>
-            <p :class="slot.full ? 'text-gray-400' : selectedSlotKey === `${slot.time}-${slot.price}` ? 'text-blue-200' : 'text-gray-500'">
-              {{ slot.price }}
+            <p>{{ formatTime(slot.startTime) }}</p>
+            <p :class="[
+              'text-[11px] mt-0.5',
+              selectedSlotId === slot._id || (!selectedSlotId && slot === slots[0])
+                ? 'text-blue-200' : 'text-gray-500'
+            ]">
+              ৳{{ Number(slot.price).toLocaleString() }}
             </p>
           </button>
         </div>
       </div>
 
+      <!-- No slots -->
+      <div v-else class="text-center py-4 text-gray-400 text-sm">
+        No slots available yet.
+      </div>
+
       <!-- Price breakdown -->
-      <div class="border-t border-gray-100 pt-4 space-y-2">
+      <div v-if="selectedSlot" class="border-t border-gray-100 pt-4 space-y-2">
         <div class="flex justify-between text-sm text-gray-500">
-          <span>Session: 06:00 AM – 07:00 AM</span>
-          <span class="font-semibold text-gray-700">${{ sessionCost.toFixed(2) }}</span>
-        </div>
-        <div class="flex justify-between text-sm text-gray-500">
-          <span>Platform Fee</span>
-          <span class="font-semibold text-gray-700">${{ platformFee.toFixed(2) }}</span>
+          <span>{{ timeSlotLabel }}</span>
+          <span class="font-semibold text-gray-700">৳{{ sessionCost.toLocaleString() }}</span>
         </div>
         <div class="flex justify-between text-sm font-black text-gray-900 pt-1 border-t border-gray-100">
           <span>Total</span>
-          <span class="text-blue-700">${{ total.toFixed(2) }}</span>
+          <span class="text-blue-700">৳{{ total.toLocaleString() }}</span>
         </div>
       </div>
 
       <!-- CTA -->
       <button
-        @click="showModal = true"
-        class="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-black text-sm py-4 rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wide"
+        @click="openModal"
+        :disabled="!slots.length"
+        class="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-sm py-4 rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wide"
       >
         Continue to Booking
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
         </svg>
       </button>
-      <p class="text-center text-gray-400 text-xs">Free cancellation up to 12 hours before the start of the session.</p>
+      <p class="text-center text-gray-400 text-xs">Free cancellation up to 12 hours before the session.</p>
     </div>
   </div>
 
   <!-- Booking Modal -->
   <BookingModal
     v-if="showModal"
-    :venue="venue"
+    :venue="modalVenue"
     :date="displayDate"
-    :time-slot="selectedSlotKey.split('-')[0]"
-    :total-price="'$' + total.toFixed(2)"
+    :time-slot="timeSlotLabel"
+    :total-price="'৳' + total.toLocaleString()"
     @close="showModal = false"
     @confirm="showModal = false"
   />
