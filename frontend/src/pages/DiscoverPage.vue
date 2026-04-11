@@ -27,6 +27,28 @@ const allVenues = ref<any[]>([])
 const loading = ref(false)
 const error = ref('')
 
+// ─── Geolocation ──────────────────────────────────────────────────────────────
+const userLocation = ref<{ lat: number; lng: number } | null>(null)
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLng = ((lng2 - lng1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function requestUserLocation() {
+  if (!navigator.geolocation) return
+  navigator.geolocation.getCurrentPosition(
+    (pos) => { userLocation.value = { lat: pos.coords.latitude, lng: pos.coords.longitude } },
+    () => { /* silently ignore denial */ },
+    { timeout: 8000 },
+  )
+}
+
 async function fetchVenues() {
   loading.value = true
   error.value = ''
@@ -40,7 +62,10 @@ async function fetchVenues() {
   }
 }
 
-onMounted(fetchVenues)
+onMounted(() => {
+  fetchVenues()
+  requestUserLocation()
+})
 
 // ─── Price bounds derived from actual venue data ───────────────────────────────
 const venueMinPrice = computed(() => {
@@ -114,7 +139,14 @@ const filteredVenues = computed(() => {
     list = list.filter(v => (v.rating ?? 0) >= q.minRating)
   }
 
-  if (q.sort === 'Price Low to High') {
+  if (q.sort === 'Near Me' && userLocation.value) {
+    const { lat, lng } = userLocation.value
+    list.sort((a, b) => {
+      const da = haversineKm(lat, lng, a.location?.lat ?? 0, a.location?.long ?? 0)
+      const db = haversineKm(lat, lng, b.location?.lat ?? 0, b.location?.long ?? 0)
+      return da - db
+    })
+  } else if (q.sort === 'Price Low to High') {
     list.sort((a, b) => {
       const pa = a.slots?.length ? Math.min(...a.slots.map((s: any) => s.price)) : 0
       const pb = b.slots?.length ? Math.min(...b.slots.map((s: any) => s.price)) : 0
@@ -156,11 +188,17 @@ function toCardProps(venue: any) {
     : 0
   const catKey = (venue.categoryId?.title ?? '').toLowerCase().replace(/\s+/g, '_')
 
+  const distanceStr = (() => {
+    if (!userLocation.value || !venue.location?.lat) return ''
+    const km = haversineKm(userLocation.value.lat, userLocation.value.lng, venue.location.lat, venue.location.long)
+    return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
+  })()
+
   return {
     slug: venue._id,
     name: venue.title,
     location: venue.location?.title ?? '',
-    distance: '—',
+    distance: distanceStr,
     price: lowestPrice,
     priceUnit: 'per slot',
     rating: venue.rating ?? 0,

@@ -10,6 +10,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { VenueFeaturesModule } from './venue-features/venue-features.module';
 import { VenuesModule } from './venues/venues.module';
 import { BookingsModule } from './bookings/bookings.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { BookingsModule } from './bookings/bookings.module';
     VenueFeaturesModule,
     VenuesModule,
     BookingsModule,
+    ReviewsModule,
   ],
 })
 export class AppModule {}

@@ -93,7 +93,7 @@ export const venueApi = {
     http.get<ApiSuccess<AvailableSlot[]>>(`/user/venues/${slug}/slots/available`, { params: { date } }),
 
   reviews: (venueId: string, page = 1) =>
-    http.get<ApiSuccess<PaginatedData<Review>>>(`/user/venues/${venueId}/reviews`, { params: { page } }),
+    http.get<ApiSuccess<PaginatedData<Review>>>(`/venues/${venueId}/reviews`, { params: { page } }),
 }
 
 // ─── Bookings ────────────────────────────────────────────────────────────────
@@ -122,8 +122,8 @@ export const bookingApi = {
   cancel: (id: string) =>
     http.delete<any>(`/bookings/${id}`),
 
-  postReview: (data: { venueId: string; bookingId: string; rating: number; comment: string }) =>
-    http.post<ApiSuccess<Review>>('/user/reviews', data),
+  postReview: (data: { venueId: string; bookingId: string; rating: number; comment: string; isAnonymous?: boolean }) =>
+    http.post<ApiSuccess<Review>>('/reviews', data),
 }
 
 // ─── Wallet ──────────────────────────────────────────────────────────────────
