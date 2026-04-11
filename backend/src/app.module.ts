@@ -9,6 +9,7 @@ import { OrganizationsModule } from './organizations/organizations.module';
 import { CategoriesModule } from './categories/categories.module';
 import { VenueFeaturesModule } from './venue-features/venue-features.module';
 import { VenuesModule } from './venues/venues.module';
+import { BookingsModule } from './bookings/bookings.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { VenuesModule } from './venues/venues.module';
     CategoriesModule,
     VenueFeaturesModule,
     VenuesModule,
+    BookingsModule,
   ],
 })
 export class AppModule {}

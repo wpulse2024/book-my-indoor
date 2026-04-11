@@ -99,20 +99,28 @@ export const venueApi = {
 // ─── Bookings ────────────────────────────────────────────────────────────────
 
 export const bookingApi = {
-  create: (data: { slotId: string; bookingDate: string; paymentMethod: string; notes?: string }) =>
-    http.post<ApiSuccess<Booking>>('/user/bookings', data),
+  create: (data: {
+    venueId: string
+    slotId: string
+    bookingDate: string
+    paymentMethod: string
+    guestName?: string
+    transactionId?: string
+    notes?: string
+  }) =>
+    http.post<any>('/bookings', data),
 
   list: (page = 1) =>
-    http.get<ApiSuccess<PaginatedData<Booking>>>('/user/bookings', { params: { page } }),
+    http.get<any>('/bookings', { params: { page } }),
 
   get: (id: string) =>
-    http.get<ApiSuccess<Booking>>(`/user/bookings/${id}`),
+    http.get<any>(`/bookings/${id}`),
+
+  getByRef: (ref: string) =>
+    http.get<any>(`/bookings/${ref}`),
 
   cancel: (id: string) =>
-    http.delete<ApiSuccess<Booking>>(`/user/bookings/${id}`),
-
-  qr: (id: string) =>
-    http.get<ApiSuccess<{ qrDataUrl: string }>>(`/user/bookings/${id}/qr`),
+    http.delete<any>(`/bookings/${id}`),
 
   postReview: (data: { venueId: string; bookingId: string; rating: number; comment: string }) =>
     http.post<ApiSuccess<Review>>('/user/reviews', data),

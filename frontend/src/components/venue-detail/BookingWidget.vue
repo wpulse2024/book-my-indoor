@@ -55,6 +55,7 @@ function openModal() {
 }
 
 const modalVenue = computed(() => ({
+  id: props.venue?._id ?? '',
   name: props.venue?.title ?? '',
   image: assetUrl(props.venue?.images?.[0]) || 'https://picsum.photos/seed/venue/800/500',
 }))
@@ -157,12 +158,11 @@ const modalVenue = computed(() => ({
 
   <!-- Booking Modal -->
   <BookingModal
-    v-if="showModal"
+    v-if="showModal && selectedSlot"
     :venue="modalVenue"
-    :date="displayDate"
-    :time-slot="timeSlotLabel"
-    :total-price="'৳' + total.toLocaleString()"
+    :slot-id="selectedSlot._id"
+    :booking-date="selectedDate"
+    :slot="{ startTime: selectedSlot.startTime, endTime: selectedSlot.endTime, price: Number(selectedSlot.price) }"
     @close="showModal = false"
-    @confirm="showModal = false"
   />
 </template>

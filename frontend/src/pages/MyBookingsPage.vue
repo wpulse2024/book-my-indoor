@@ -1,29 +1,65 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import TheNavbar from '@/components/TheNavbar.vue'
 import AccountSidebar from '@/components/account/AccountSidebar.vue'
 import WalletCard from '@/components/account/WalletCard.vue'
 import BookingCard from '@/components/account/BookingCard.vue'
 import ActivityItem from '@/components/account/ActivityItem.vue'
 import SavedVenueCard from '@/components/account/SavedVenueCard.vue'
+import { bookingApi, assetUrl } from '@/services/api'
 
-const bookings = [
-  {
-    venueName: 'Velocity Indoor Arena',
-    branch: 'Banani, Branch 04',
-    date: 'Tomorrow',
-    time: '6:00 PM - 8:00 PM',
-    status: 'confirmed' as const,
-    image: 'https://picsum.photos/seed/velocity-arena/600/400',
-  },
-  {
-    venueName: 'Apex Badminton Club',
-    branch: 'Uttara, Sector 7',
-    date: 'Sat, Oct 24',
-    time: '10:00 AM - 11:30 AM',
-    status: 'paid' as const,
-    image: 'https://picsum.photos/seed/apex-badminton/600/400',
-  },
-]
+// Real bookings from API
+const rawBookings = ref<any[]>([])
+const loadingBookings = ref(true)
+const bookingsError = ref('')
+
+function formatTime(t: string): string {
+  if (!t) return ''
+  const [h, m] = t.split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`
+}
+
+function formatBookingDate(dateStr: string): string {
+  if (!dateStr) return ''
+  const d = new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+}
+
+function mapStatus(status: string): 'confirmed' | 'paid' | 'cancelled' {
+  if (status === 'completed') return 'paid'
+  if (status === 'cancelled') return 'cancelled'
+  return 'confirmed'
+}
+
+const bookingCards = ref<{
+  venueName: string
+  branch: string
+  date: string
+  time: string
+  status: 'confirmed' | 'paid' | 'cancelled'
+  image: string
+}[]>([])
+
+onMounted(async () => {
+  try {
+    const res = await bookingApi.list(1)
+    const data = res.data
+    rawBookings.value = Array.isArray(data) ? data : (data?.items ?? [])
+    bookingCards.value = rawBookings.value.map((b: any) => ({
+      venueName: b.venueId?.title ?? 'Unknown Venue',
+      branch: b.venueId?.location?.title ?? '',
+      date: formatBookingDate(b.bookingDate),
+      time: `${formatTime(b.startTime)} – ${formatTime(b.endTime)}`,
+      status: mapStatus(b.status),
+      image: assetUrl(b.venueId?.images?.[0]) || 'https://picsum.photos/seed/venue/600/400',
+    }))
+  } catch (err: any) {
+    bookingsError.value = err.response?.data?.message ?? 'Failed to load bookings'
+  } finally {
+    loadingBookings.value = false
+  }
+})
 
 const activities = [
   {
@@ -95,17 +131,38 @@ const savedVenues = [
           <div class="bg-white rounded-2xl border border-gray-100 p-6">
             <div class="flex items-center justify-between mb-5">
               <h2 class="font-black text-gray-900 text-lg">Upcoming Bookings</h2>
-              <a href="#" class="text-blue-700 text-sm font-bold hover:underline flex items-center gap-1">
-                View Calendar
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-              </a>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <!-- Loading -->
+            <div v-if="loadingBookings" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div v-for="i in 2" :key="i" class="rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
+                <div class="bg-gray-200" style="height: 180px;"></div>
+                <div class="p-4 space-y-2">
+                  <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div class="h-3 bg-gray-100 rounded w-1/2"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Error -->
+            <div v-else-if="bookingsError" class="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-red-600 text-sm">
+              {{ bookingsError }}
+            </div>
+
+            <!-- Empty -->
+            <div v-else-if="bookingCards.length === 0" class="text-center py-12 text-gray-400">
+              <svg class="w-12 h-12 mx-auto mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <p class="font-black text-gray-300 text-lg">No bookings yet</p>
+              <p class="text-sm mt-1">Book a venue to get started!</p>
+            </div>
+
+            <!-- Bookings grid -->
+            <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <BookingCard
-                v-for="booking in bookings"
-                :key="booking.venueName"
+                v-for="(booking, idx) in bookingCards"
+                :key="idx"
                 v-bind="booking"
               />
             </div>
