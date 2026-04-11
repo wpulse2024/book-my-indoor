@@ -16,6 +16,7 @@ const navItems = [
   { label: 'Subscriptions', icon: 'subscriptions', path: '/admin/subscriptions' },
   { label: 'Payments', icon: 'payments', path: '/admin/payments' },
   { label: 'Categories', icon: 'categories', path: '/admin/categories' },
+  { label: 'Venue Features', icon: 'features', path: '/admin/venue-features' },
 ]
 
 const systemItems = [
@@ -87,6 +88,10 @@ const systemItems = [
         <!-- Categories -->
         <svg v-else-if="item.icon === 'categories'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+        </svg>
+        <!-- Venue Features -->
+        <svg v-else-if="item.icon === 'features'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
         </svg>
         {{ item.label }}
       </RouterLink>

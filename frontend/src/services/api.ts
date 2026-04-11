@@ -20,6 +20,18 @@ function createApiBaseUrl() {
   return new URL('api/v1', backendBaseUrl).toString().replace(/\/$/, '')
 }
 
+const backendOrigin = (() => {
+  const base = import.meta.env.VITE_BACKEND_BASE_URL ?? 'http://localhost:8000/'
+  return base.replace(/\/$/, '')
+})()
+
+/** Resolves a DB-stored relative path (e.g. "uploads/categories/x.jpg") to a full URL. */
+export function assetUrl(path: string | null | undefined): string {
+  if (!path) return ''
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  return `${backendOrigin}/${path.replace(/^\//, '')}`
+}
+
 const http: AxiosInstance = axios.create({
   baseURL: createApiBaseUrl(),
   headers: { 'Content-Type': 'application/json' },
@@ -164,14 +176,33 @@ export const categoryApi = {
   get: (id: string) =>
     http.get<any>(`/categories/${id}`),
 
-  create: (data: { title: string; image: string }) =>
-    http.post<any>('/categories', data),
+  create: (data: FormData) =>
+    http.post<any>('/categories', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
 
-  update: (id: string, data: Partial<{ title: string; image: string }>) =>
-    http.patch<any>(`/categories/${id}`, data),
+  update: (id: string, data: FormData) =>
+    http.patch<any>(`/categories/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
 
   remove: (id: string) =>
     http.delete(`/categories/${id}`),
+}
+
+// ─── Venue Features ──────────────────────────────────────────────────────────
+
+export const venueFeatureApi = {
+  list: () =>
+    http.get<any[]>('/venue-features'),
+
+  get: (id: string) =>
+    http.get<any>(`/venue-features/${id}`),
+
+  create: (data: { name: string; icon: string }) =>
+    http.post<any>('/venue-features', data),
+
+  update: (id: string, data: { name?: string; icon?: string }) =>
+    http.patch<any>(`/venue-features/${id}`, data),
+
+  remove: (id: string) =>
+    http.delete(`/venue-features/${id}`),
 }
 
 export default http

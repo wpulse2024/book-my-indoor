@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { categoryApi } from '@/services/api'
+import { categoryApi, assetUrl } from '@/services/api'
 import axios from 'axios'
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -19,7 +19,9 @@ const formError = ref('')
 const deleteTarget = ref<any | null>(null)
 const isDeleting = ref(false)
 
-const form = ref({ title: '', image: '' })
+const form = ref({ title: '' })
+const imageFile = ref<File | null>(null)
+const imagePreview = ref<string>('')
 
 // ── Computed ───────────────────────────────────────────────────────────────
 const filtered = computed(() => {
@@ -41,7 +43,9 @@ function getMsg(cause: unknown, fallback: string) {
 function openCreate() {
   isEditing.value = false
   editTarget.value = null
-  form.value = { title: '', image: '' }
+  form.value = { title: '' }
+  imageFile.value = null
+  imagePreview.value = ''
   formError.value = ''
   showModal.value = true
 }
@@ -49,7 +53,9 @@ function openCreate() {
 function openEdit(cat: any) {
   isEditing.value = true
   editTarget.value = cat
-  form.value = { title: cat.title, image: cat.image }
+  form.value = { title: cat.title }
+  imageFile.value = null
+  imagePreview.value = assetUrl(cat.image)
   formError.value = ''
   showModal.value = true
 }
@@ -57,6 +63,13 @@ function openEdit(cat: any) {
 function closeModal() {
   showModal.value = false
   formError.value = ''
+}
+
+function onImageChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  imageFile.value = file
+  imagePreview.value = URL.createObjectURL(file)
 }
 
 // ── API Methods ────────────────────────────────────────────────────────────
@@ -76,16 +89,20 @@ async function loadCategories() {
 async function submitForm() {
   formError.value = ''
   if (!form.value.title.trim()) { formError.value = 'Title is required.'; return }
-  if (!form.value.image.trim()) { formError.value = 'Image URL is required.'; return }
+  if (!isEditing.value && !imageFile.value) { formError.value = 'Image is required.'; return }
+
+  const fd = new FormData()
+  fd.append('title', form.value.title.trim())
+  if (imageFile.value) fd.append('image', imageFile.value)
 
   isSubmitting.value = true
   try {
     if (isEditing.value && editTarget.value) {
-      const res = await categoryApi.update(editTarget.value._id, form.value)
+      const res = await categoryApi.update(editTarget.value._id, fd)
       const idx = categories.value.findIndex(c => c._id === editTarget.value._id)
       if (idx !== -1) categories.value[idx] = res.data
     } else {
-      const res = await categoryApi.create(form.value)
+      const res = await categoryApi.create(fd)
       categories.value.push(res.data)
     }
     closeModal()
@@ -182,7 +199,7 @@ onMounted(loadCategories)
         <!-- Image -->
         <div class="relative h-36 bg-gray-100 overflow-hidden">
           <img
-            :src="cat.image"
+            :src="assetUrl(cat.image)"
             :alt="cat.title"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             @error="(e: any) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(cat.title)}&background=6366f1&color=fff&size=200&bold=true`"
@@ -240,8 +257,8 @@ onMounted(loadCategories)
               <!-- Image preview -->
               <div class="mb-4 h-32 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
                 <img
-                  v-if="form.image"
-                  :src="form.image"
+                  v-if="imagePreview"
+                  :src="imagePreview"
                   alt="Preview"
                   class="w-full h-full object-cover"
                   @error="(e: any) => e.target.style.display = 'none'"
@@ -265,15 +282,17 @@ onMounted(loadCategories)
                   />
                 </div>
 
-                <!-- Image URL -->
+                <!-- Image upload -->
                 <div>
-                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Image URL <span class="text-red-400">*</span></label>
-                  <input
-                    v-model="form.image"
-                    type="url"
-                    placeholder="https://example.com/badminton.jpg"
-                    class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition"
-                  />
+                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                    Image <span v-if="!isEditing" class="text-red-400">*</span>
+                    <span v-else class="text-gray-400 normal-case font-normal">(leave empty to keep current)</span>
+                  </label>
+                  <label class="flex items-center gap-3 w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-500 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/40 transition">
+                    <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span class="truncate">{{ imageFile ? imageFile.name : 'Choose image…' }}</span>
+                    <input type="file" accept="image/*" class="hidden" @change="onImageChange" />
+                  </label>
                 </div>
 
                 <!-- Error -->
@@ -304,7 +323,7 @@ onMounted(loadCategories)
           <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 z-10 text-center">
             <!-- Category preview -->
             <div class="w-16 h-16 rounded-2xl overflow-hidden mx-auto mb-4 bg-gray-100">
-              <img :src="deleteTarget.image" :alt="deleteTarget.title" class="w-full h-full object-cover" />
+              <img :src="assetUrl(deleteTarget.image)" :alt="deleteTarget.title" class="w-full h-full object-cover" />
             </div>
             <h3 class="font-black text-gray-900 text-lg">Delete Category?</h3>
             <p class="text-sm text-gray-500 mt-1">

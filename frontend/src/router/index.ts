@@ -83,6 +83,11 @@ const router = createRouter({
           component: () => import('@/pages/admin/AdminCategoriesPage.vue'),
         },
         {
+          path: 'venue-features',
+          name: 'admin-venue-features',
+          component: () => import('@/pages/admin/AdminVenueFeaturesPage.vue'),
+        },
+        {
           path: 'settings',
           name: 'admin-settings',
           component: () => import('@/pages/admin/AdminVenuesPage.vue'), // placeholder
