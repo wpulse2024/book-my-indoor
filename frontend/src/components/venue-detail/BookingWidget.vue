@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import BookingModal from '@/components/BookingModal.vue'
 import { assetUrl } from '@/services/api'
+import http from '@/services/api'
 
 const props = defineProps<{
   venue: any
@@ -13,13 +14,50 @@ const showModal = ref(false)
 const today = new Date().toISOString().split('T')[0]
 const selectedDate = ref(today)
 
-const slots = computed(() => props.venue?.slots ?? [])
+// Slot availability fetched per date
+const slotsWithStatus = ref<any[]>([])
+const loadingSlots = ref(false)
+
+async function fetchSlotAvailability(date: string) {
+  if (!props.venue?._id) return
+  loadingSlots.value = true
+  try {
+    const res = await http.get<any[]>('/bookings/slot-availability', {
+      params: { venueId: props.venue._id, date },
+    })
+    slotsWithStatus.value = res.data
+  } catch {
+    // Fall back to static slots without availability info
+    slotsWithStatus.value = (props.venue?.slots ?? []).map((s: any) => ({
+      ...s,
+      bookingStatus: null,
+      isBooked: false,
+    }))
+  } finally {
+    loadingSlots.value = false
+  }
+}
+
+onMounted(() => fetchSlotAvailability(selectedDate.value))
+watch(selectedDate, (date) => {
+  selectedSlotId.value = ''
+  fetchSlotAvailability(date)
+})
+
+const availableSlots = computed(() => slotsWithStatus.value.filter((s: any) => !s.isBooked))
+
 const selectedSlotId = ref<string>('')
 
-// Auto-select first slot when slots load
 const selectedSlot = computed(() =>
-  slots.value.find((s: any) => s._id === selectedSlotId.value) ?? slots.value[0] ?? null
+  slotsWithStatus.value.find((s: any) => s._id === selectedSlotId.value) ??
+  availableSlots.value[0] ??
+  null
 )
+
+function selectSlot(slot: any) {
+  if (slot.isBooked) return
+  selectedSlotId.value = slot._id
+}
 
 function formatTime(t: string): string {
   if (!t) return ''
@@ -51,7 +89,9 @@ const timeSlotLabel = computed(() => {
 })
 
 function openModal() {
-  if (slots.value.length) showModal.value = true
+  if (availableSlots.value.length && selectedSlot.value && !selectedSlot.value.isBooked) {
+    showModal.value = true
+  }
 }
 
 const modalVenue = computed(() => ({
@@ -59,6 +99,13 @@ const modalVenue = computed(() => ({
   name: props.venue?.title ?? '',
   image: assetUrl(props.venue?.images?.[0]) || 'https://picsum.photos/seed/venue/800/500',
 }))
+
+function isSelected(slot: any): boolean {
+  if (slot.isBooked) return false
+  return selectedSlotId.value
+    ? selectedSlotId.value === slot._id
+    : slot._id === availableSlots.value[0]?._id
+}
 </script>
 
 <template>
@@ -94,31 +141,39 @@ const modalVenue = computed(() => ({
         </label>
       </div>
 
-      <!-- Available Slots -->
-      <div v-if="slots.length">
+      <!-- Slots -->
+      <div v-if="loadingSlots" class="text-center py-4 text-gray-400 text-sm animate-pulse">
+        Loading slots…
+      </div>
+
+      <div v-else-if="slotsWithStatus.length">
         <div class="flex items-center justify-between mb-3">
           <p class="text-xs font-black text-gray-400 uppercase tracking-widest">Available Slots</p>
-          <span class="text-blue-700 text-xs font-black">{{ slots.length }} slots</span>
+          <span class="text-blue-700 text-xs font-black">{{ availableSlots.length }} / {{ slotsWithStatus.length }} slots</span>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <button
-            v-for="slot in slots"
+            v-for="slot in slotsWithStatus"
             :key="slot._id"
-            @click="selectedSlotId = slot._id"
+            @click="selectSlot(slot)"
+            :disabled="slot.isBooked"
             :class="[
-              'rounded-xl py-2.5 px-2 text-center transition-all text-xs font-bold leading-tight',
-              selectedSlotId === slot._id || (!selectedSlotId && slot === slots[0])
-                ? 'bg-blue-700 text-white shadow-md'
-                : 'border border-gray-200 text-gray-700 hover:border-blue-400'
+              'rounded-xl py-2.5 px-2 text-center transition-all text-xs font-bold leading-tight relative',
+              slot.isBooked
+                ? 'bg-gray-100 text-gray-300 cursor-not-allowed border border-gray-200'
+                : isSelected(slot)
+                  ? 'bg-blue-700 text-white shadow-md'
+                  : 'border border-gray-200 text-gray-700 hover:border-blue-400'
             ]"
           >
             <p>{{ formatTime(slot.startTime) }}</p>
             <p :class="[
               'text-[11px] mt-0.5',
-              selectedSlotId === slot._id || (!selectedSlotId && slot === slots[0])
-                ? 'text-blue-200' : 'text-gray-500'
+              slot.isBooked
+                ? 'text-gray-300'
+                : isSelected(slot) ? 'text-blue-200' : 'text-gray-500'
             ]">
-              ৳{{ Number(slot.price).toLocaleString() }}
+              {{ slot.isBooked ? (slot.bookingStatus === 'pending' ? 'Pending' : 'Booked') : '৳' + Number(slot.price).toLocaleString() }}
             </p>
           </button>
         </div>
@@ -130,7 +185,7 @@ const modalVenue = computed(() => ({
       </div>
 
       <!-- Price breakdown -->
-      <div v-if="selectedSlot" class="border-t border-gray-100 pt-4 space-y-2">
+      <div v-if="selectedSlot && !selectedSlot.isBooked" class="border-t border-gray-100 pt-4 space-y-2">
         <div class="flex justify-between text-sm text-gray-500">
           <span>{{ timeSlotLabel }}</span>
           <span class="font-semibold text-gray-700">৳{{ sessionCost.toLocaleString() }}</span>
@@ -144,7 +199,7 @@ const modalVenue = computed(() => ({
       <!-- CTA -->
       <button
         @click="openModal"
-        :disabled="!slots.length"
+        :disabled="!availableSlots.length || !selectedSlot"
         class="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-sm py-4 rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wide"
       >
         Continue to Booking
@@ -158,7 +213,7 @@ const modalVenue = computed(() => ({
 
   <!-- Booking Modal -->
   <BookingModal
-    v-if="showModal && selectedSlot"
+    v-if="showModal && selectedSlot && !selectedSlot.isBooked"
     :venue="modalVenue"
     :slot-id="selectedSlot._id"
     :booking-date="selectedDate"

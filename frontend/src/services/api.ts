@@ -143,6 +143,23 @@ export const walletApi = {
     }),
 }
 
+// ─── Agent Bookings ───────────────────────────────────────────────────────────
+
+export const agentBookingApi = {
+  list: (page = 1) =>
+    http.get<any>('/bookings/agent', { params: { page } }),
+
+  updateStatus: (id: string, status: string) =>
+    http.patch<any>(`/bookings/${id}/status`, { status }),
+}
+
+// ─── Admin Bookings ───────────────────────────────────────────────────────────
+
+export const adminBookingApi = {
+  list: (page = 1, status?: string) =>
+    http.get<any>('/bookings/all', { params: { page, ...(status ? { status } : {}) } }),
+}
+
 // ─── Organizations (Agents) ──────────────────────────────────────────────────
 
 export const organizationApi = {

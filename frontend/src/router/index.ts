@@ -41,7 +41,7 @@ const router = createRouter({
       children: [
         { path: '', name: 'agent-dashboard', component: () => import('@/pages/agent/AgentDashboardPage.vue') },
         { path: 'venues',   name: 'agent-venues',   component: () => import('@/pages/agent/AgentVenuesPage.vue') },
-        { path: 'bookings', name: 'agent-bookings', component: () => import('@/pages/agent/AgentDashboardPage.vue') },
+        { path: 'bookings', name: 'agent-bookings', component: () => import('@/pages/agent/AgentBookingsPage.vue') },
         { path: 'staff', name: 'agent-staff', component: () => import('@/pages/agent/AgentStaffPage.vue') },
         { path: 'settings', name: 'agent-settings', component: () => import('@/pages/agent/AgentSettingsPage.vue') },
       ],
@@ -76,7 +76,7 @@ const router = createRouter({
         {
           path: 'bookings',
           name: 'admin-bookings',
-          component: () => import('@/pages/admin/AdminVenuesPage.vue'), // placeholder
+          component: () => import('@/pages/admin/AdminBookingsPage.vue'),
         },
         {
           path: 'categories',

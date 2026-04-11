@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -109,6 +110,75 @@ export class BookingsService {
     };
   }
 
+  async getAgentBookings(organizationId: string, page = 1) {
+    // Fetch all venue IDs that belong to this organization.
+    // Use raw string (same as findByOrganization) — Mongoose auto-casts to ObjectId.
+    const venues = await this.venueModel
+      .find({ organizationId }, { _id: 1 })
+      .lean()
+      .exec();
+    const venueIds = venues.map((v) => v._id);
+
+    const skip = (page - 1) * PER_PAGE;
+    const filter = { venueId: { $in: venueIds } };
+
+    const [items, total] = await Promise.all([
+      this.bookingModel
+        .find(filter)
+        .populate('venueId', 'title images location')
+        .populate('userId', 'name phone email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(PER_PAGE)
+        .lean()
+        .exec(),
+      this.bookingModel.countDocuments(filter),
+    ]);
+
+    return { items, total, page, perPage: PER_PAGE, totalPages: Math.ceil(total / PER_PAGE) };
+  }
+
+  async getAllBookings(page = 1, status?: string) {
+    const skip = (page - 1) * PER_PAGE;
+    const filter: Record<string, any> = {};
+    if (status) filter.status = status;
+
+    const [items, total] = await Promise.all([
+      this.bookingModel
+        .find(filter)
+        .populate('venueId', 'title images location organizationId')
+        .populate('userId', 'name phone email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(PER_PAGE)
+        .lean()
+        .exec(),
+      this.bookingModel.countDocuments(filter),
+    ]);
+
+    return { items, total, page, perPage: PER_PAGE, totalPages: Math.ceil(total / PER_PAGE) };
+  }
+
+  async updateAgentBookingStatus(
+    bookingId: string,
+    status: BookingStatus,
+    organizationId: string,
+  ): Promise<BookingDocument> {
+    const booking = await this.bookingModel
+      .findById(bookingId)
+      .populate<{ venueId: { organizationId: Types.ObjectId } }>('venueId', 'organizationId')
+      .exec();
+    if (!booking) throw new NotFoundException('Booking not found');
+
+    const venueOrg = (booking.venueId as any)?.organizationId?.toString();
+    if (venueOrg !== organizationId) {
+      throw new ForbiddenException('You do not have access to this booking');
+    }
+
+    booking.status = status;
+    return booking.save();
+  }
+
   async getBookingByRef(bookingRef: string) {
     const booking = await this.bookingModel
       .findOne({ bookingRef })
@@ -117,6 +187,42 @@ export class BookingsService {
       .exec();
     if (!booking) throw new NotFoundException('Booking not found');
     return booking;
+  }
+
+  async getSlotAvailability(venueId: string, date: string) {
+    const venue = await this.venueModel
+      .findById(venueId)
+      .select('slots')
+      .lean()
+      .exec();
+    if (!venue) throw new NotFoundException('Venue not found');
+
+    const bookings = await this.bookingModel
+      .find({
+        venueId: new Types.ObjectId(venueId),
+        bookingDate: date,
+        status: { $in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+      })
+      .select('slotId status')
+      .lean()
+      .exec();
+
+    const bookedMap = new Map<string, BookingStatus>();
+    for (const b of bookings) {
+      bookedMap.set(b.slotId.toString(), b.status);
+    }
+
+    const slots = (venue.slots as any[]).map((s: any) => {
+      const id = s._id.toString();
+      const bookingStatus = bookedMap.get(id);
+      return {
+        ...s,
+        bookingStatus: bookingStatus ?? null,
+        isBooked: !!bookingStatus,
+      };
+    });
+
+    return slots;
   }
 
   private generateBookingRef(): string {
