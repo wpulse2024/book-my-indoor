@@ -109,6 +109,10 @@ export class AuthService {
     };
   }
 
+  async updateProfile(userId: string, data: { name?: string; email?: string }) {
+    return this.usersService.updateProfile(userId, data);
+  }
+
   async validateUser(identifier: string) {
     const user = await this.usersService.findByIdentifier(identifier);
 

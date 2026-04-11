@@ -32,6 +32,12 @@ const router = createRouter({
       component: () => import('@/pages/MyBookingsPage.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/account/profile',
+      name: 'account-profile',
+      component: () => import('@/pages/AccountProfilePage.vue'),
+      meta: { requiresAuth: true },
+    },
 
     // ── Agent app ──────────────────────────────────────────────────────────────
     {

@@ -73,8 +73,8 @@ export const authApi = {
 
   profile: () => http.get<Partial<User>>('/auth/profile'),
 
-  updateProfile: (_data: Partial<User>) =>
-    Promise.reject(new Error('Profile update endpoint is not implemented in the backend yet')),
+  updateProfile: (data: { name?: string; email?: string }) =>
+    http.patch<Partial<User>>('/auth/profile', data),
 }
 
 // ─── Venues ──────────────────────────────────────────────────────────────────

@@ -119,10 +119,11 @@ export const useAuthStore = defineStore('auth', () => {
     clearAuth()
   }
 
-  async function updateProfile(data: Partial<User>) {
+  async function updateProfile(data: { name?: string; email?: string }) {
     isLoading.value = true
     try {
-      await authApi.updateProfile(data)
+      const res = await authApi.updateProfile(data)
+      user.value = normalizeUser({ ...user.value, ...res.data })
     } finally {
       isLoading.value = false
     }

@@ -91,6 +91,16 @@ export class UsersService {
     await this.userModel.updateOne({ phone }, { $set: { isActive: true } });
   }
 
+  async updateProfile(id: string, data: { name?: string; email?: string }): Promise<User> {
+    const user = await this.userModel
+      .findByIdAndUpdate(id, { $set: data }, { new: true })
+      .populate({ path: 'roles', populate: { path: 'permissions' } })
+      .lean()
+      .exec();
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
   async remove(id: string): Promise<void> {
     const result = await this.userModel.findByIdAndDelete(id);
     if (!result) throw new NotFoundException('User not found');
