@@ -131,7 +131,7 @@ onMounted(loadOrgs)
 </script>
 
 <template>
-  <div>
+  <div class="max-w-5xl mx-auto">
     <!-- Header -->
     <div class="flex items-start justify-between mb-6">
       <div>
@@ -295,25 +295,6 @@ onMounted(loadOrgs)
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
-      </div>
-    </div>
-
-    <!-- Promo banner -->
-    <div class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-violet-600 rounded-2xl p-6 flex items-center justify-between overflow-hidden relative">
-      <div class="relative z-10">
-        <h3 class="text-white font-black text-lg">Scaling Your Network?</h3>
-        <p class="text-indigo-200 text-sm mt-1 max-w-lg leading-relaxed">
-          Agents with Pro plans are currently seeing a 45% higher booking rate this quarter. Consider promoting high-value agents to featured status.
-        </p>
-        <button class="mt-4 px-4 py-2 bg-white text-indigo-700 text-sm font-bold rounded-xl hover:bg-indigo-50 transition-colors">
-          View Analytics
-        </button>
-      </div>
-      <!-- Decorative -->
-      <div class="absolute right-6 bottom-0 opacity-10">
-        <svg class="w-32 h-32 text-white" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-        </svg>
       </div>
     </div>
 

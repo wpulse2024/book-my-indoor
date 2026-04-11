@@ -297,7 +297,7 @@ function venueIsActive(venue: any): boolean {
 </script>
 
 <template>
-  <div>
+  <div class="max-w-5xl mx-auto px-4">
     <!-- Breadcrumb -->
     <nav class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
       <span>Admin</span>

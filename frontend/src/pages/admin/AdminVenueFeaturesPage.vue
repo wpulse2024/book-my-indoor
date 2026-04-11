@@ -201,7 +201,7 @@ onMounted(loadFeatures)
 </script>
 
 <template>
-  <div>
+  <div class="max-w-5xl mx-auto">
     <!-- Header -->
     <div class="flex items-start justify-between mb-6">
       <div>

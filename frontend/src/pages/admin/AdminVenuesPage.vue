@@ -65,7 +65,7 @@ const filtered = computed(() =>
 <template>
   <div>
     <!-- Page header -->
-    <div class="flex items-start justify-between mb-6">
+    <div class="flex items-start justify-between mb-6 max-w-5xl mx-auto">
       <div>
         <h1 class="text-2xl font-black text-gray-900">Venues</h1>
         <p class="text-gray-500 text-sm mt-1">Manage, monitor, and configure the status of all available event spaces across your global network.</p>
@@ -79,7 +79,7 @@ const filtered = computed(() =>
     </div>
 
     <!-- Filters -->
-    <div class="flex items-center gap-3 mb-5">
+    <div class="flex items-center gap-3 mb-5 max-w-5xl mx-auto">
       <div class="flex-1 relative">
         <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -110,7 +110,7 @@ const filtered = computed(() =>
     </div>
 
     <!-- Table -->
-    <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden max-w-5xl mx-auto">
       <table class="w-full">
         <thead>
           <tr class="border-b border-gray-100">
@@ -194,37 +194,6 @@ const filtered = computed(() =>
           <button class="px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:border-indigo-300 hover:text-indigo-600 transition-colors">2</button>
           <button class="px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:border-indigo-300 hover:text-indigo-600 transition-colors">3</button>
           <button class="px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:border-indigo-300 hover:text-indigo-600 transition-colors">Next</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bottom widgets -->
-    <div class="grid grid-cols-3 gap-5 mt-5">
-      <!-- Venue Utilization Trends -->
-      <div class="col-span-2 bg-white rounded-2xl border border-gray-100 p-5">
-        <h3 class="font-bold text-gray-900 mb-1">Venue Utilization Trends</h3>
-        <p class="text-xs text-gray-400 mb-5">Capacity performance metrics across all active regions.</p>
-        <div class="flex items-end gap-2 h-28">
-          <div v-for="(h, i) in [55, 65, 70, 80, 95, 75]" :key="i"
-            class="flex-1 bg-indigo-500 rounded-t-md opacity-80 hover:opacity-100 transition-opacity"
-            :style="{ height: h + '%' }"
-          />
-        </div>
-        <div class="flex justify-between mt-2 text-xs text-gray-400 font-medium">
-          <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
-        </div>
-      </div>
-
-      <!-- Stats cards -->
-      <div class="flex flex-col gap-4">
-        <div class="bg-indigo-600 rounded-2xl p-5 text-white">
-          <p class="text-xs font-bold uppercase tracking-widest text-indigo-300 mb-2">Regional Leader</p>
-          <h3 class="text-2xl font-black leading-none">North America</h3>
-          <p class="text-indigo-200 text-xs mt-2 leading-relaxed">Currently dominating with 142 active venues and 88% average occupancy rate this quarter.</p>
-        </div>
-        <div class="bg-white rounded-2xl border border-gray-100 p-5">
-          <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Pending Approval</p>
-          <p class="text-4xl font-black text-gray-900">12</p>
         </div>
       </div>
     </div>
