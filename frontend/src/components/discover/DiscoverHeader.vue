@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const props = defineProps<{ total?: number }>()
 const sortOptions = ['Near Me', 'Price Low to High', 'Top Rated']
 const activeSort = defineModel<string>('sort', { default: 'Near Me' })
 </script>
@@ -7,7 +8,10 @@ const activeSort = defineModel<string>('sort', { default: 'Near Me' })
   <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
     <div>
       <h1 class="font-black text-gray-900 text-3xl leading-tight">Discover Venues</h1>
-      <p class="text-gray-400 text-sm mt-1">Found 24 elite venues near New York</p>
+      <p class="text-gray-400 text-sm mt-1">
+        <template v-if="props.total != null">Found {{ props.total }} venue{{ props.total !== 1 ? 's' : '' }}</template>
+        <template v-else>Searching…</template>
+      </p>
     </div>
 
     <!-- Sort tabs -->

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   name: string
-  count: number
+  count?: number
   gradient: string
   image?: string
 }>()
@@ -21,7 +21,7 @@ defineProps<{
     <!-- Text -->
     <div class="absolute bottom-0 left-0 right-0 p-4">
       <p class="text-white font-black text-base uppercase tracking-wider leading-none mb-1">{{ name }}</p>
-      <p class="text-orange-400 text-xs font-bold uppercase tracking-widest">{{ count }} Venues</p>
+      <p v-if="count != null" class="text-orange-400 text-xs font-bold uppercase tracking-widest">{{ count }} Venues</p>
     </div>
   </div>
 </template>

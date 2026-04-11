@@ -1,21 +1,32 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 
-const current = ref(1)
+const props = defineProps<{ totalPages: number }>()
+const current = defineModel<number>({ default: 1 })
 
-const pages = [1, 2, 3, '...', 12]
+const pages = computed(() => {
+  const total = props.totalPages
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const c = current.value
+  if (c <= 4) return [1, 2, 3, 4, 5, '...', total]
+  if (c >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total]
+  return [1, '...', c - 1, c, c + 1, '...', total]
+})
+
+function prev() { if (current.value > 1) current.value-- }
+function next() { if (current.value < props.totalPages) current.value++ }
 </script>
 
 <template>
   <div class="flex flex-col items-center gap-4 mt-8">
-    <button class="text-blue-700 font-black text-sm hover:underline">
-      Load More Venues
-    </button>
-
     <!-- Pagination -->
     <div class="flex items-center gap-1">
       <!-- Prev -->
-      <button class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:border-blue-300 hover:text-blue-700 transition-colors">
+      <button
+        @click="prev"
+        :disabled="current === 1"
+        class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:border-blue-300 hover:text-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
@@ -38,7 +49,11 @@ const pages = [1, 2, 3, '...', 12]
       </template>
 
       <!-- Next -->
-      <button class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:border-blue-300 hover:text-blue-700 transition-colors">
+      <button
+        @click="next"
+        :disabled="current === totalPages"
+        class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:border-blue-300 hover:text-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>

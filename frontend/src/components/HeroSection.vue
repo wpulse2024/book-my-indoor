@@ -1,13 +1,22 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
-const location = ref('Gulshan, Dhaka')
+const router = useRouter()
+const location = ref('')
 const selectedDate = ref('')
 
 const displayDate = computed(() => selectedDate.value
   ? new Date(selectedDate.value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   : 'Today'
 )
+
+function find() {
+  const query: Record<string, string> = {}
+  if (location.value.trim()) query.search = location.value.trim()
+  if (selectedDate.value) query.date = selectedDate.value
+  router.push({ path: '/discover', query })
+}
 </script>
 
 <template>
@@ -64,7 +73,13 @@ const displayDate = computed(() => selectedDate.value
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span class="text-sm text-gray-700 font-medium truncate">{{ location }}</span>
+            <input
+              v-model="location"
+              type="text"
+              placeholder="Area or venue name…"
+              class="text-sm text-gray-700 font-medium w-full bg-transparent outline-none placeholder-gray-400"
+              @keyup.enter="find"
+            />
           </div>
 
           <!-- Date -->
@@ -81,7 +96,10 @@ const displayDate = computed(() => selectedDate.value
           </div>
 
           <!-- FIND button -->
-          <button class="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-black text-sm px-7 py-3 tracking-widest transition-colors uppercase flex-shrink-0">
+          <button
+            @click="find"
+            class="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-black text-sm px-7 py-3 tracking-widest transition-colors uppercase flex-shrink-0"
+          >
             Find
           </button>
         </div>
