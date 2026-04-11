@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { agentVenueApi, categoryApi, venueFeatureApi, assetUrl } from '@/services/api'
+import { useAuthStore } from '@/stores/auth.store'
+
+const auth = useAuthStore()
 
 const venues = ref<any[]>([])
 const categories = ref<any[]>([])
@@ -309,6 +312,7 @@ function venueIsActive(venue: any): boolean {
         <p class="text-gray-500 text-sm mt-1 max-w-lg">Manage your indoor sports facilities, monitor active status, and optimize court availability across all locations.</p>
       </div>
       <button
+        v-if="!auth.isManager"
         @click="openCreate"
         class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors"
       >
@@ -414,6 +418,7 @@ function venueIsActive(venue: any): boolean {
 
           <!-- Actions -->
           <div class="flex gap-2">
+            <template v-if="!auth.isManager">
             <button
               @click="openEdit(venue)"
               class="flex-1 text-xs font-bold text-gray-700 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600 py-2 rounded-xl transition-colors"
@@ -429,6 +434,7 @@ function venueIsActive(venue: any): boolean {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
             </button>
+            </template>
             <button
               class="flex-1 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl transition-colors"
             >
@@ -440,6 +446,7 @@ function venueIsActive(venue: any): boolean {
 
       <!-- Add new venue card -->
       <button
+        v-if="!auth.isManager"
         @click="openCreate"
         class="border-2 border-dashed border-gray-200 hover:border-indigo-300 rounded-2xl flex flex-col items-center justify-center gap-3 p-8 text-center transition-all group min-h-[300px]"
       >

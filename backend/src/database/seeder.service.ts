@@ -49,6 +49,16 @@ const SYSTEM_PERMISSIONS: Array<{ name: string; description: string }> = [
   { name: 'venues:create', description: 'Create a new venue' },
   { name: 'venues:update', description: 'Update a venue' },
   { name: 'venues:delete', description: 'Delete a venue' },
+  // staff resource (agent manages their org's staff)
+  { name: 'staff:read', description: 'List staff in own organization' },
+  { name: 'staff:create', description: 'Add a staff member to own organization' },
+  { name: 'staff:delete', description: 'Remove a staff member from own organization' },
+  // venues read (manager can view venues, agent already has create/update/delete)
+  { name: 'venues:read', description: 'View venues in own organization' },
+  // bookings resource
+  { name: 'bookings:read', description: 'View bookings in own organization' },
+  { name: 'bookings:create', description: 'Create a booking' },
+  { name: 'bookings:update', description: 'Update / change status of a booking' },
 ];
 
 const ADMIN_ROLE_NAME = 'admin';
@@ -75,6 +85,7 @@ export class SeederService {
     const permissions = await this.seedPermissions();
     const adminRole = await this.seedAdminRole(permissions);
     await this.seedAgentRole(permissions);
+    await this.seedManagerRole(permissions);
     await this.seedUserRole();
     await this.seedAdminUser(adminRole._id as any);
 
@@ -134,7 +145,11 @@ export class SeederService {
   private async seedAgentRole(permissions: PermissionDocument[]): Promise<void> {
     this.logger.log(`Seeding role: 'agent'…`);
 
-    const agentPermissionNames = ['venues:create', 'venues:update', 'venues:delete'];
+    const agentPermissionNames = [
+      'venues:create', 'venues:update', 'venues:delete',
+      'staff:read', 'staff:create', 'staff:delete',
+      'roles:readNonAdmin',
+    ];
     const agentPermissionIds = permissions
       .filter((p) => agentPermissionNames.includes(p.name))
       .map((p) => p._id);
@@ -152,6 +167,36 @@ export class SeederService {
     );
 
     this.logger.log(`Role 'agent' ready with ${agentPermissionIds.length} permissions.`);
+  }
+
+  // ─── Manager role ───────────────────────────────────────────────────────────
+
+  private async seedManagerRole(permissions: PermissionDocument[]): Promise<void> {
+    this.logger.log(`Seeding role: 'manager'…`);
+
+    const managerPermissionNames = [
+      'venues:read',
+      'bookings:read',
+      'bookings:create',
+      'bookings:update',
+    ];
+    const managerPermissionIds = permissions
+      .filter((p) => managerPermissionNames.includes(p.name))
+      .map((p) => p._id);
+
+    await this.roleModel.findOneAndUpdate(
+      { name: 'manager' },
+      {
+        $set: { permissions: managerPermissionIds },
+        $setOnInsert: {
+          name: 'manager',
+          description: 'Can view venues and manage bookings only',
+        },
+      },
+      { upsert: true, new: true },
+    );
+
+    this.logger.log(`Role 'manager' ready with ${managerPermissionIds.length} permissions.`);
   }
 
   // ─── User role ──────────────────────────────────────────────────────────────

@@ -167,6 +167,45 @@ export const organizationApi = {
     http.delete(`/organizations/${id}`),
 }
 
+// ─── Roles ────────────────────────────────────────────────────────────────────
+
+export const rolesApi = {
+  list: () =>
+    http.get<any[]>('/roles'),
+
+  listNonAdmin: () =>
+    http.get<any[]>('/roles/non-admin'),
+
+  create: (data: { name: string; description?: string; permissions?: string[] }) =>
+    http.post<any>('/roles', data),
+
+  update: (id: string, data: { name?: string; description?: string; permissions?: string[] }) =>
+    http.patch<any>(`/roles/${id}`, data),
+
+  remove: (id: string) =>
+    http.delete(`/roles/${id}`),
+}
+
+// ─── Permissions ──────────────────────────────────────────────────────────────
+
+export const permissionsApi = {
+  list: () =>
+    http.get<any[]>('/permissions'),
+}
+
+// ─── Staff (agent manages own org's staff) ───────────────────────────────────
+
+export const staffApi = {
+  list: () =>
+    http.get<any[]>('/organizations/my-staff'),
+
+  create: (data: { name: string; phone: string; email?: string; password: string; roleId?: string }) =>
+    http.post<any>('/organizations/staff', data),
+
+  remove: (staffUserId: string) =>
+    http.delete(`/organizations/staff/${staffUserId}`),
+}
+
 // ─── Categories ──────────────────────────────────────────────────────────────
 
 export const categoryApi = {

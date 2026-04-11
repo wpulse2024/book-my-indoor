@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 
@@ -8,19 +9,26 @@ const auth = useAuthStore()
 const isActive = (path: string) =>
   path === '/agent' ? route.path === '/agent' : route.path.startsWith(path)
 
-const navItems = [
-  { label: 'Dashboard',        icon: 'dashboard',   path: '/agent' },
-  { label: 'My Venues',        icon: 'venues',      path: '/agent/venues' },
-  { label: 'Booking Calendar', icon: 'calendar',    path: '/agent/calendar' },
-  { label: 'Bookings',         icon: 'bookings',    path: '/agent/bookings' },
-  { label: 'Customers',        icon: 'customers',   path: '/agent/customers' },
-  { label: 'Staff & Roles',    icon: 'staff',       path: '/agent/staff' },
-  { label: 'Pricing & Slots',  icon: 'slots',       path: '/agent/slots' },
-  { label: 'Revenue & Reports',icon: 'reports',     path: '/agent/reports' },
-  { label: 'Wallet / Payouts', icon: 'wallet',      path: '/agent/wallet' },
-  { label: 'Reviews & Ratings',icon: 'reviews',     path: '/agent/reviews' },
-  { label: 'Settings',         icon: 'settings',    path: '/agent/settings' },
+// agentOnly: true means the item is hidden for managers (only agents see it)
+const allNavItems = [
+  { label: 'Dashboard',         icon: 'dashboard',  path: '/agent' },
+  { label: 'My Venues',         icon: 'venues',     path: '/agent/venues' },
+  { label: 'Bookings',          icon: 'bookings',   path: '/agent/bookings' },
+  { label: 'Booking Calendar',  icon: 'calendar',   path: '/agent/calendar',  agentOnly: true },
+  { label: 'Customers',         icon: 'customers',  path: '/agent/customers', agentOnly: true },
+  { label: 'Staff & Roles',     icon: 'staff',      path: '/agent/staff',     agentOnly: true },
+  { label: 'Pricing & Slots',   icon: 'slots',      path: '/agent/slots',     agentOnly: true },
+  { label: 'Revenue & Reports', icon: 'reports',    path: '/agent/reports',   agentOnly: true },
+  { label: 'Wallet / Payouts',  icon: 'wallet',     path: '/agent/wallet',    agentOnly: true },
+  { label: 'Reviews & Ratings', icon: 'reviews',    path: '/agent/reviews',   agentOnly: true },
+  { label: 'Settings',          icon: 'settings',   path: '/agent/settings',  agentOnly: true },
 ]
+
+const navItems = computed(() =>
+  auth.isManager
+    ? allNavItems.filter((item) => !item.agentOnly)
+    : allNavItems,
+)
 </script>
 
 <template>
@@ -79,7 +87,7 @@ const navItems = [
         />
         <div class="min-w-0">
           <p class="text-xs font-bold text-gray-900 truncate">{{ auth.user?.name || auth.user?.email || 'Agent' }}</p>
-          <p class="text-[10px] text-gray-400">Super Admin</p>
+          <p class="text-[10px] text-gray-400 capitalize">{{ auth.isManager ? 'Manager' : 'Agent' }}</p>
         </div>
       </div>
     </div>

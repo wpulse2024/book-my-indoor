@@ -79,7 +79,7 @@ function resetMessages() {
 
 function handleAuthSuccess() {
   if (auth.isAdmin) { router.push('/admin/venues'); return }
-  if (auth.isAgent) { router.push('/agent'); return }
+  if (auth.hasAgentAccess) { router.push('/agent'); return }
   const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
   router.push(redirect)
 }

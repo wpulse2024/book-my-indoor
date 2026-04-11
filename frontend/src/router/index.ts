@@ -42,6 +42,7 @@ const router = createRouter({
         { path: '', name: 'agent-dashboard', component: () => import('@/pages/agent/AgentDashboardPage.vue') },
         { path: 'venues',   name: 'agent-venues',   component: () => import('@/pages/agent/AgentVenuesPage.vue') },
         { path: 'bookings', name: 'agent-bookings', component: () => import('@/pages/agent/AgentDashboardPage.vue') },
+        { path: 'staff', name: 'agent-staff', component: () => import('@/pages/agent/AgentStaffPage.vue') },
         { path: 'settings', name: 'agent-settings', component: () => import('@/pages/agent/AgentSettingsPage.vue') },
       ],
     },
@@ -88,6 +89,11 @@ const router = createRouter({
           component: () => import('@/pages/admin/AdminVenueFeaturesPage.vue'),
         },
         {
+          path: 'roles',
+          name: 'admin-roles',
+          component: () => import('@/pages/admin/AdminRolesPage.vue'),
+        },
+        {
           path: 'settings',
           name: 'admin-settings',
           component: () => import('@/pages/admin/AdminVenuesPage.vue'), // placeholder
@@ -113,13 +119,13 @@ router.beforeEach(async (to) => {
     return { name: 'home' }
   }
 
-  if (to.meta.requiresAgent && !auth.isAgent) {
+  if (to.meta.requiresAgent && !auth.hasAgentAccess) {
     return { name: 'home' }
   }
 
   if (to.meta.guestOnly && auth.isLoggedIn) {
     if (auth.isAdmin) return { name: 'admin-venues' }
-    if (auth.isAgent) return { name: 'agent-dashboard' }
+    if (auth.hasAgentAccess) return { name: 'agent-dashboard' }
     return { name: 'home' }
   }
 

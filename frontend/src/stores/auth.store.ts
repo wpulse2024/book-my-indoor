@@ -35,6 +35,14 @@ export const useAuthStore = defineStore('auth', () => {
     if (!roles) return false
     return roles.some((r: any) => (typeof r === 'string' ? r : r?.name) === 'agent')
   })
+  const isManager = computed(() => {
+    if (!user.value) return false
+    const roles = (user.value as any).roles
+    if (!roles) return false
+    return roles.some((r: any) => (typeof r === 'string' ? r : r?.name) === 'manager')
+  })
+  /** True for both agents and managers — both can access the agent app */
+  const hasAgentAccess = computed(() => isAgent.value || isManager.value)
 
   function setToken(t: string) {
     token.value = t
@@ -128,6 +136,8 @@ export const useAuthStore = defineStore('auth', () => {
     isLoggedIn,
     isAdmin,
     isAgent,
+    isManager,
+    hasAgentAccess,
     fetchMe,
     loginWithOtp,
     loginWithPassword,
