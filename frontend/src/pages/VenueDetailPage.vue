@@ -149,7 +149,12 @@ const categoryLabel = computed(() => {
           </div>
 
           <VenueAmenities v-if="amenities.length" :amenities="amenities" />
-          <VenueMap v-if="venue.location?.title" :address="venue.location.title" />
+          <VenueMap
+            v-if="venue.location?.lat && venue.location?.long"
+            :lat="venue.location.lat"
+            :lng="venue.location.long"
+            :address="venue.location.title"
+          />
           <VenueReviews :venue-id="venue._id" />
         </div>
 
