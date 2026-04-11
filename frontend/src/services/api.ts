@@ -186,6 +186,22 @@ export const categoryApi = {
     http.delete(`/categories/${id}`),
 }
 
+// ─── Agent Venue Management ───────────────────────────────────────────────────
+
+export const agentVenueApi = {
+  list: () =>
+    http.get<any[]>('/venues/mine'),
+
+  create: (data: FormData) =>
+    http.post<any>('/venues', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+
+  update: (id: string, data: FormData) =>
+    http.patch<any>(`/venues/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+
+  remove: (id: string) =>
+    http.delete(`/venues/${id}`),
+}
+
 // ─── Venue Features ──────────────────────────────────────────────────────────
 
 export const venueFeatureApi = {

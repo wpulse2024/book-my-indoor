@@ -74,7 +74,7 @@ export class SeederService {
 
     const permissions = await this.seedPermissions();
     const adminRole = await this.seedAdminRole(permissions);
-    await this.seedAgentRole();
+    await this.seedAgentRole(permissions);
     await this.seedUserRole();
     await this.seedAdminUser(adminRole._id as any);
 
@@ -131,22 +131,27 @@ export class SeederService {
 
   // ─── Agent role ─────────────────────────────────────────────────────────────
 
-  private async seedAgentRole(): Promise<void> {
+  private async seedAgentRole(permissions: PermissionDocument[]): Promise<void> {
     this.logger.log(`Seeding role: 'agent'…`);
+
+    const agentPermissionNames = ['venues:create', 'venues:update', 'venues:delete'];
+    const agentPermissionIds = permissions
+      .filter((p) => agentPermissionNames.includes(p.name))
+      .map((p) => p._id);
 
     await this.roleModel.findOneAndUpdate(
       { name: 'agent' },
       {
+        $set: { permissions: agentPermissionIds },
         $setOnInsert: {
           name: 'agent',
           description: 'Organization agent with limited access',
-          permissions: [],
         },
       },
       { upsert: true, new: true },
     );
 
-    this.logger.log(`Role 'agent' ready.`);
+    this.logger.log(`Role 'agent' ready with ${agentPermissionIds.length} permissions.`);
   }
 
   // ─── User role ──────────────────────────────────────────────────────────────

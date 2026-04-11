@@ -25,6 +25,15 @@ export class VenuesService {
       .exec();
   }
 
+  findByOrganization(organizationId: string): Promise<VenueDocument[]> {
+    return this.venueModel
+      .find({ organizationId })
+      .populate('categoryId')
+      .populate('features')
+      .lean()
+      .exec();
+  }
+
   async findOne(id: string): Promise<VenueDocument> {
     const venue = await this.venueModel
       .findById(id)

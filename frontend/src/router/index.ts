@@ -40,7 +40,7 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAgent: true },
       children: [
         { path: '', name: 'agent-dashboard', component: () => import('@/pages/agent/AgentDashboardPage.vue') },
-        { path: 'venues',   name: 'agent-venues',   component: () => import('@/pages/agent/AgentDashboardPage.vue') },
+        { path: 'venues',   name: 'agent-venues',   component: () => import('@/pages/agent/AgentVenuesPage.vue') },
         { path: 'bookings', name: 'agent-bookings', component: () => import('@/pages/agent/AgentDashboardPage.vue') },
         { path: 'settings', name: 'agent-settings', component: () => import('@/pages/agent/AgentSettingsPage.vue') },
       ],

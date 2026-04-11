@@ -16,8 +16,8 @@ import { VenuesService } from './venues.service';
 import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { PermissionsGuard } from '../common/guards/permissions.guard';
-import { RequirePermissions } from '../common/decorators/permissions.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { venueImagesUploadOptions } from '../common/upload.config';
 
@@ -30,8 +30,8 @@ export class VenuesController {
   constructor(private readonly venuesService: VenuesService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions('venues:create')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'agent')
   @UseInterceptors(FilesInterceptor('images', 10, venueImagesUploadOptions))
   create(
     @Body() dto: CreateVenueDto,
@@ -62,14 +62,24 @@ export class VenuesController {
     return this.venuesService.findAll();
   }
 
+  // Agent — returns only venues belonging to the authenticated user's organization
+  @Get('mine')
+  @UseGuards(JwtAuthGuard)
+  findMine(@CurrentUser() user: any) {
+    if (!user.organization) {
+      throw new BadRequestException('Your account is not linked to any organization');
+    }
+    return this.venuesService.findByOrganization(user.organization.toString());
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.venuesService.findOne(id);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions('venues:update')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'agent')
   @UseInterceptors(FilesInterceptor('images', 10, venueImagesUploadOptions))
   update(
     @Param('id') id: string,
@@ -81,8 +91,8 @@ export class VenuesController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions('venues:delete')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'agent')
   remove(@Param('id') id: string) {
     return this.venuesService.remove(id);
   }

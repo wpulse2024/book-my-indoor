@@ -1,0 +1,18 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "VenueFlow" [ref=e5] [cursor=pointer]:
+      - /url: /
+    - link "Support" [ref=e6] [cursor=pointer]:
+      - /url: "#"
+  - main [ref=e7]:
+    - generic [ref=e9]:
+      - paragraph [ref=e10]: Secure venue access
+      - heading "Welcome Back" [level=1] [ref=e11]
+      - paragraph [ref=e12]: Enter your phone number to continue.
+      - generic [ref=e13]:
+        - generic [ref=e14]: Phone Number
+        - generic [ref=e15]:
+          - combobox [ref=e16]:
+            - option "+880" [selected]
+          - textbox "1XXX XXXXXX" [active] [ref=e17]
+        - button "Continue" [ref=e18] [cursor=pointer]

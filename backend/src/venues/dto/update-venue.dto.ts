@@ -1,4 +1,5 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import {
   IsArray,
   IsMongoId,
@@ -17,9 +18,13 @@ export class UpdateVenueDto {
   @IsOptional()
   description?: string;
 
-  @Transform(({ value }) => (typeof value === 'string' ? JSON.parse(value) : value))
+  @Transform(({ value }) =>
+    plainToInstance(
+      VenueLocationDto,
+      typeof value === 'string' ? JSON.parse(value) : value,
+    ),
+  )
   @ValidateNested()
-  @Type(() => VenueLocationDto)
   @IsOptional()
   location?: VenueLocationDto;
 
@@ -33,10 +38,14 @@ export class UpdateVenueDto {
   @IsOptional()
   categoryId?: string;
 
-  @Transform(({ value }) => (typeof value === 'string' ? JSON.parse(value) : value))
+  @Transform(({ value }) => {
+    const arr = typeof value === 'string' ? JSON.parse(value) : value;
+    return Array.isArray(arr)
+      ? arr.map((item: unknown) => plainToInstance(VenueSlotDto, item))
+      : [];
+  })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => VenueSlotDto)
   @IsOptional()
   slots?: VenueSlotDto[];
 }
