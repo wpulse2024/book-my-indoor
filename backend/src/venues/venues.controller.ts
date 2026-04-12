@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -15,51 +16,54 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { VenuesService } from './venues.service';
 import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
+import { FindVenuesQueryDto } from './dto/find-venues-query.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { RequirePermissions } from '../common/decorators/permissions.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { venueImagesUploadOptions } from '../common/upload.config';
-
-function isAdmin(user: any): boolean {
-  return user?.roles?.some((r: any) => r.name === 'admin') ?? false;
-}
 
 @Controller('venues')
 export class VenuesController {
   constructor(private readonly venuesService: VenuesService) {}
 
+  // Agent — creates a venue under their own organization
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'agent')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('venues:create')
   @UseInterceptors(FilesInterceptor('images', 10, venueImagesUploadOptions))
   create(
     @Body() dto: CreateVenueDto,
     @CurrentUser() user: any,
     @UploadedFiles() images: Express.Multer.File[],
   ) {
-    let organizationId: string;
-
-    if (isAdmin(user)) {
-      if (!dto.organizationId) {
-        throw new BadRequestException('Organization is required for admin');
-      }
-      organizationId = dto.organizationId;
-    } else {
-      if (!user.organization) {
-        throw new BadRequestException('Your account is not linked to any organization');
-      }
-      organizationId = user.organization.toString();
+    if (!user.organization) {
+      throw new BadRequestException('Your account is not linked to any organization');
     }
-
     const imagePaths = (images ?? []).map((f) => f.path);
-    return this.venuesService.create(dto, imagePaths, organizationId);
+    return this.venuesService.create(dto, imagePaths, user.organization.toString());
   }
 
-  // Public — anyone can browse venues
+  // Admin — creates a venue under any specified organization
+  @Post('admin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('venues:adminCreate')
+  @UseInterceptors(FilesInterceptor('images', 10, venueImagesUploadOptions))
+  createAsAdmin(
+    @Body() dto: CreateVenueDto,
+    @UploadedFiles() images: Express.Multer.File[],
+  ) {
+    if (!dto.organizationId) {
+      throw new BadRequestException('organizationId is required');
+    }
+    const imagePaths = (images ?? []).map((f) => f.path);
+    return this.venuesService.create(dto, imagePaths, dto.organizationId);
+  }
+
+  // Public — anyone can browse venues, optionally filter by status
   @Get()
-  findAll() {
-    return this.venuesService.findAll();
+  findAll(@Query() query: FindVenuesQueryDto) {
+    return this.venuesService.findAll(query);
   }
 
   // Agent — returns only venues belonging to the authenticated user's organization
@@ -77,11 +81,30 @@ export class VenuesController {
     return this.venuesService.findOne(id);
   }
 
+  // Agent — updates only venues belonging to their own organization
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'agent')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('venues:update')
   @UseInterceptors(FilesInterceptor('images', 10, venueImagesUploadOptions))
   update(
+    @Param('id') id: string,
+    @Body() dto: UpdateVenueDto,
+    @CurrentUser() user: any,
+    @UploadedFiles() images?: Express.Multer.File[],
+  ) {
+    if (!user.organization) {
+      throw new BadRequestException('Your account is not linked to any organization');
+    }
+    const imagePaths = (images ?? []).map((f) => f.path);
+    return this.venuesService.updateByOrganization(id, user.organization.toString(), dto, imagePaths);
+  }
+
+  // Admin — updates any venue regardless of organization
+  @Patch('admin/:id')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('venues:adminUpdate')
+  @UseInterceptors(FilesInterceptor('images', 10, venueImagesUploadOptions))
+  updateAsAdmin(
     @Param('id') id: string,
     @Body() dto: UpdateVenueDto,
     @UploadedFiles() images?: Express.Multer.File[],
@@ -91,8 +114,8 @@ export class VenuesController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'agent')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('venues:delete')
   remove(@Param('id') id: string) {
     return this.venuesService.remove(id);
   }

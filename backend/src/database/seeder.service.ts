@@ -46,8 +46,10 @@ const SYSTEM_PERMISSIONS: Array<{ name: string; description: string }> = [
   { name: 'venue-features:update', description: 'Update a venue feature' },
   { name: 'venue-features:delete', description: 'Delete a venue feature' },
   // venues resource
-  { name: 'venues:create', description: 'Create a new venue' },
-  { name: 'venues:update', description: 'Update a venue' },
+  { name: 'venues:adminCreate', description: 'Create a venue under any organization (admin only)' },
+  { name: 'venues:adminUpdate', description: 'Update any venue regardless of organization (admin only)' },
+  { name: 'venues:create', description: 'Create a new venue under own organization' },
+  { name: 'venues:update', description: 'Update a venue within own organization' },
   { name: 'venues:delete', description: 'Delete a venue' },
   // staff resource (agent manages their org's staff)
   { name: 'staff:read', description: 'List staff in own organization' },
@@ -55,6 +57,19 @@ const SYSTEM_PERMISSIONS: Array<{ name: string; description: string }> = [
   { name: 'staff:delete', description: 'Remove a staff member from own organization' },
   // venues read (manager can view venues, agent already has create/update/delete)
   { name: 'venues:read', description: 'View venues in own organization' },
+  // venue-slots resource
+  { name: 'venue-slots:adminCreate', description: 'Create a slot under any organization (admin only)' },
+  { name: 'venue-slots:adminUpdate', description: 'Update any slot regardless of organization (admin only)' },
+  { name: 'venue-slots:adminUpdateStatus', description: 'Publish/unpublish any slot (admin only)' },
+  { name: 'venue-slots:adminDelete', description: 'Delete any slot regardless of organization (admin only)' },
+  { name: 'venue-slots:readAll', description: 'List all slots across all organizations (admin only)' },
+  { name: 'venue-slots:bookByAgent', description: 'Book a slot for a customer (agent only)' },
+  { name: 'venue-slots:book', description: 'Book a slot as an end user' },
+  { name: 'venue-slots:create', description: 'Create a slot under own organization' },
+  { name: 'venue-slots:readMine', description: 'View slots in own organization' },
+  { name: 'venue-slots:update', description: 'Update a slot within own organization' },
+  { name: 'venue-slots:updateStatus', description: 'Publish/unpublish a slot within own organization' },
+  { name: 'venue-slots:delete', description: 'Delete a slot within own organization' },
   // bookings resource
   { name: 'bookings:read', description: 'View bookings in own organization' },
   { name: 'bookings:create', description: 'Create a booking' },
@@ -86,7 +101,7 @@ export class SeederService {
     const adminRole = await this.seedAdminRole(permissions);
     await this.seedAgentRole(permissions);
     await this.seedManagerRole(permissions);
-    await this.seedUserRole();
+    await this.seedUserRole(permissions);
     await this.seedAdminUser(adminRole._id as any);
 
     this.logger.log('Seed complete.');
@@ -147,6 +162,8 @@ export class SeederService {
 
     const agentPermissionNames = [
       'venues:create', 'venues:update', 'venues:delete',
+      'venue-slots:bookByAgent',
+      'venue-slots:create', 'venue-slots:readMine', 'venue-slots:update', 'venue-slots:updateStatus', 'venue-slots:delete',
       'staff:read', 'staff:create', 'staff:delete',
       'roles:readNonAdmin',
     ];
@@ -201,22 +218,27 @@ export class SeederService {
 
   // ─── User role ──────────────────────────────────────────────────────────────
 
-  private async seedUserRole(): Promise<void> {
+  private async seedUserRole(permissions: PermissionDocument[]): Promise<void> {
     this.logger.log(`Seeding role: 'user'…`);
+
+    const userPermissionNames = ['venue-slots:book'];
+    const userPermissionIds = permissions
+      .filter((p) => userPermissionNames.includes(p.name))
+      .map((p) => p._id);
 
     await this.roleModel.findOneAndUpdate(
       { name: 'user' },
       {
+        $set: { permissions: userPermissionIds },
         $setOnInsert: {
           name: 'user',
           description: 'Default role assigned to all registered end users',
-          permissions: [],
         },
       },
       { upsert: true, new: true },
     );
 
-    this.logger.log(`Role 'user' ready.`);
+    this.logger.log(`Role 'user' ready with ${userPermissionIds.length} permissions.`);
   }
 
   // ─── Admin user ─────────────────────────────────────────────────────────────

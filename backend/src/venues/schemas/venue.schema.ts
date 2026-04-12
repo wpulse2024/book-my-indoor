@@ -4,6 +4,11 @@ import { Category } from '../../categories/schemas/category.schema';
 import { VenueFeature } from '../../venue-features/schemas/venue-feature.schema';
 import { Organization } from '../../organizations/schemas/organization.schema';
 
+export enum VenueStatus {
+  ACTIVE = 'active',
+  MAINTENANCE = 'maintenance',
+}
+
 export type VenueDocument = HydratedDocument<Venue>;
 
 @Schema({ _id: false })
@@ -58,6 +63,9 @@ export class Venue {
 
   @Prop({ type: Types.ObjectId, ref: Organization.name, required: true })
   organizationId!: Types.ObjectId;
+
+  @Prop({ type: String, enum: VenueStatus, default: VenueStatus.ACTIVE })
+  status!: VenueStatus;
 }
 
 export const VenueSchema = SchemaFactory.createForClass(Venue);

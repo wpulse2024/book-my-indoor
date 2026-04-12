@@ -9,6 +9,7 @@ import { OrganizationsModule } from './organizations/organizations.module';
 import { CategoriesModule } from './categories/categories.module';
 import { VenueFeaturesModule } from './venue-features/venue-features.module';
 import { VenuesModule } from './venues/venues.module';
+import { VenueSlotsModule } from './venue-slots/venue-slots.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { ReviewsModule } from './reviews/reviews.module';
 
@@ -41,6 +42,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     CategoriesModule,
     VenueFeaturesModule,
     VenuesModule,
+    VenueSlotsModule,
     BookingsModule,
     ReviewsModule,
   ],

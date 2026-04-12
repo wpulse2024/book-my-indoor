@@ -10,5 +10,6 @@ import { VenuesController } from './venues.controller';
   ],
   controllers: [VenuesController],
   providers: [VenuesService],
+  exports: [MongooseModule],
 })
 export class VenuesModule {}

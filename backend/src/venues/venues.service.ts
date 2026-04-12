@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Venue, VenueDocument } from './schemas/venue.schema';
+import { Venue, VenueDocument, VenueStatus } from './schemas/venue.schema';
 import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
+import { FindVenuesQueryDto } from './dto/find-venues-query.dto';
 
 @Injectable()
 export class VenuesService {
@@ -16,9 +17,12 @@ export class VenuesService {
     return this.venueModel.create({ ...dto, images: imagePaths, organizationId });
   }
 
-  findAll(): Promise<VenueDocument[]> {
+  findAll(query: FindVenuesQueryDto): Promise<VenueDocument[]> {
+    const filter: Record<string, any> = {};
+    if (query.status) filter.status = query.status;
+
     return this.venueModel
-      .find()
+      .find(filter)
       .populate('categoryId')
       .populate('features')
       .lean()
@@ -56,6 +60,25 @@ export class VenuesService {
       .lean()
       .exec();
     if (!venue) throw new NotFoundException('Venue not found');
+    return venue;
+  }
+
+  async updateByOrganization(
+    id: string,
+    organizationId: string,
+    dto: UpdateVenueDto,
+    imagePaths?: string[],
+  ): Promise<VenueDocument> {
+    const update: Record<string, any> = { ...dto };
+    if (imagePaths && imagePaths.length > 0) update.images = imagePaths;
+
+    const venue = await this.venueModel
+      .findOneAndUpdate({ _id: id, organizationId }, update, { new: true })
+      .populate('categoryId')
+      .populate('features')
+      .lean()
+      .exec();
+    if (!venue) throw new NotFoundException('Venue not found or does not belong to your organization');
     return venue;
   }
 

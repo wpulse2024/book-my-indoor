@@ -2,6 +2,7 @@ import { Transform } from 'class-transformer';
 import { plainToInstance } from 'class-transformer';
 import {
   IsArray,
+  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
@@ -10,6 +11,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import { VenueStatus } from '../schemas/venue.schema';
 
 export class VenueLocationDto {
   @IsString()
@@ -69,6 +71,10 @@ export class CreateVenueDto {
   @IsMongoId()
   @IsOptional()
   organizationId?: string;
+
+  @IsEnum(VenueStatus)
+  @IsOptional()
+  status?: VenueStatus;
 
   @Transform(({ value }) => {
     const arr = typeof value === 'string' ? JSON.parse(value) : value;

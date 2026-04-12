@@ -11,7 +11,7 @@ All collections use **MongoDB** via **Mongoose**. Timestamps (`createdAt`, `upda
 4. [Organization](#4-organization)
 5. [OTP](#5-otp)
 6. [Venue](#6-venue)
-7. [Slot *(planned)*](#7-slot-planned)
+7. [VenueSlot](#7-venueslot)
 8. [Booking *(planned)*](#8-booking-planned)
 9. [WalletTransaction *(planned)*](#9-wallettransaction-planned)
 10. [Review *(planned)*](#10-review-planned)
@@ -516,38 +516,375 @@ Updated venue document — same shape as GET single (with populated `features` a
 
 ---
 
-## 7. Slot *(planned)*
+## 7. VenueSlot
 
-**Collection**: `slots` (to be implemented in Phase 1 Week 5–6)
+**Collection**: `venueslots`
+**File**: `backend/src/venue-slots/schemas/venue-slot.schema.ts`
 
 ### Sample Object
 ```js
 {
-  _id: ObjectId("..."),
-  venueId: ObjectId("..."),              // ref → Venue
-  name: "Morning Session",
-  startTime: "08:00",                    // HH:mm format
-  endTime: "09:00",
-  durationMinutes: 60,
-  basePrice: 450,                        // in BDT (Taka)
-  maxCapacity: 10,                       // max concurrent bookings
-  isActive: true,
-  createdAt: ISODate("..."),
-  updatedAt: ISODate("...")
+  _id: ObjectId("665f2b3c4d5e6f7a8b9c0101"),
+  organizationId: ObjectId("69d75680eeb57da0521b3152"),  // ref → Organization
+  venueId: ObjectId("665f1a2b3c4d5e6f7a8b9c10"),         // ref → Venue
+  date: ISODate("2026-04-15T00:00:00.000Z"),
+  startTime: "09:00",
+  endTime: "10:00",
+  slotPrice: 500,
+  commissionAmount: 50,         // resolved from org at booking time
+  totalAmount: 550,             // slotPrice + commissionAmount
+  status: "publish",            // "draft" | "publish" | "unpublish"
+  bookingStatus: "booked",      // "booked" | "cancelled" | "rejected" — absent until first booking
+  bookingInfo: {
+    userId: ObjectId("69d75680a6dbe87a871dbd58"),  // ref → User
+    paymentStatus: "pending_for_payment",           // see PaymentStatus enum
+    bookingTime: ISODate("2026-04-14T12:34:00.000Z"),
+    paymentMethod: "Bkash",     // optional — set after payment
+    transactionId: "TXN123456", // optional — set after payment
+    paymentNumber: "01711000000" // optional — set after payment
+  },
+  bookingHistory: [
+    {
+      userId: ObjectId("69d75680a6dbe87a871dbd58"),
+      paymentStatus: "pending_for_payment",
+      bookingTime: ISODate("2026-04-14T12:34:00.000Z"),
+      paymentMethod: null,
+      transactionId: null,
+      paymentNumber: null,
+      bookingStatus: "booked"
+    }
+  ],
+  createdAt: ISODate("2026-04-11T10:00:00.000Z"),
+  updatedAt: ISODate("2026-04-14T12:34:00.000Z"),
+  __v: 0
 }
 ```
 
+### Enums
+
+| Enum | Values |
+|---|---|
+| `SlotStatus` | `draft` \| `publish` \| `unpublish` |
+| `BookingStatus` | `booked` \| `cancelled` \| `rejected` |
+| `PaymentStatus` | `pending_for_payment` \| `payment_done` \| `payment_verified` \| `payment_rejected` |
+| `PaymentMethod` | `Bkash` \| `Nagad` \| `Rocket` \| `Cash` |
+
 ### Fields
-| Field | Type | Required | Description |
+
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `_id` | ObjectId | auto | — | MongoDB document ID |
+| `organizationId` | ObjectId | Yes | — | Ref → Organization. Auto-resolved from agent token or venue for admin |
+| `venueId` | ObjectId | Yes | — | Ref → Venue |
+| `date` | Date | Yes | — | Slot date. Stored as start-of-day UTC |
+| `startTime` | String | Yes | — | Format: `"HH:mm"` |
+| `endTime` | String | Yes | — | Format: `"HH:mm"` |
+| `slotPrice` | Number | Yes | — | Base price in BDT. Min: 0 |
+| `commissionAmount` | Number | No | — | Set at booking time from org settings |
+| `totalAmount` | Number | No | — | `slotPrice + commissionAmount`. Set at booking time |
+| `status` | String (enum) | No | `draft` | Lifecycle status of the slot |
+| `bookingStatus` | String (enum) | No | — | Absent until first booking action |
+| `bookingInfo` | Object | No | — | Current active booking details |
+| `bookingInfo.userId` | ObjectId | Yes* | — | Ref → User who booked |
+| `bookingInfo.paymentStatus` | String (enum) | Yes* | `pending_for_payment` | Payment lifecycle |
+| `bookingInfo.bookingTime` | Date | Yes* | — | When the booking was created |
+| `bookingInfo.paymentMethod` | String (enum) | No | — | Set after payment is initiated |
+| `bookingInfo.transactionId` | String | No | — | Gateway transaction reference |
+| `bookingInfo.paymentNumber` | String | No | — | Mobile number used for payment |
+| `bookingHistory` | Object[] | No | `[]` | Full audit log of all booking events |
+| `bookingHistory[].bookingStatus` | String (enum) | Yes* | — | Status at the time of this history entry |
+| `createdAt` | Date | auto | — | Mongoose timestamp |
+| `updatedAt` | Date | auto | — | Mongoose timestamp |
+
+*Required only when the parent object is present.
+
+### Relationships
+- `organizationId` → `Organization._id`
+- `venueId` → `Venue._id`
+- `bookingInfo.userId` → `User._id`
+- `bookingHistory[].userId` → `User._id`
+
+### Business Rules
+- A slot can only be **updated or deleted** when `status === "draft"`
+- A slot can only be **booked** when `status === "publish"` and `bookingStatus !== "booked"`
+- A slot can only be **published/unpublished** when `bookingStatus !== "booked"`
+- `commissionAmount` is calculated at booking time from `Organization.commissionType` + `Organization.commissionAmount`:
+  - `fixed` → `commissionAmount = org.commissionAmount`
+  - `percentage` → `commissionAmount = round(slotPrice × org.commissionAmount / 100, 2)`
+- `totalAmount = slotPrice + commissionAmount`
+- **Bulk creation**: supply `venueId + startDate + endDate` → one slot is created per day × per template slot in `Venue.slots[]`
+- Agent booking auto-creates a user account (with `isActive: true`) if the provided phone number is not found
+
+---
+
+## 7a. VenueSlot API
+
+Base prefix: `/api/v1/venue-slots`
+
+### Permissions
+
+| Permission | Assigned to | Route |
+|---|---|---|
+| `venue-slots:create` | agent | `POST /venue-slots`, `POST /venue-slots/bulk` |
+| `venue-slots:adminCreate` | admin | `POST /venue-slots/admin`, `POST /venue-slots/admin/bulk` |
+| `venue-slots:readAll` | admin | `GET /venue-slots` |
+| `venue-slots:readMine` | agent | `GET /venue-slots/mine` |
+| `venue-slots:read` | agent, admin | `GET /venue-slots/:id` |
+| `venue-slots:update` | agent | `PATCH /venue-slots/:id` |
+| `venue-slots:adminUpdate` | admin | `PATCH /venue-slots/admin/:id` |
+| `venue-slots:updateStatus` | agent | `PATCH /venue-slots/:id/status` |
+| `venue-slots:adminUpdateStatus` | admin | `PATCH /venue-slots/admin/:id/status` |
+| `venue-slots:bookByAgent` | agent | `POST /venue-slots/:id/book` |
+| `venue-slots:book` | user | `POST /venue-slots/:id/book-user` |
+| `venue-slots:delete` | agent | `DELETE /venue-slots/:id` |
+| `venue-slots:adminDelete` | admin | `DELETE /venue-slots/admin/:id` |
+
+---
+
+### POST /api/v1/venue-slots
+Agent creates a single slot under their own organization.
+
+**Auth:** Bearer token. Permission: `venue-slots:create`
+
+#### Request body (JSON)
+```json
+{
+  "venueId": "665f1a2b3c4d5e6f7a8b9c10",
+  "date": "2026-04-15",
+  "startTime": "09:00",
+  "endTime": "10:00",
+  "slotPrice": 500,
+  "commissionAmount": 50,
+  "totalAmount": 550,
+  "status": "draft"
+}
+```
+| Field | Type | Required | Notes |
 |---|---|---|---|
-| `venueId` | ObjectId | Yes | Ref to Venue |
-| `name` | String | Yes | Slot display name |
-| `startTime` | String | Yes | Format: `"HH:mm"` |
-| `endTime` | String | Yes | Format: `"HH:mm"` |
-| `durationMinutes` | Number | Yes | Session length in minutes |
-| `basePrice` | Number | Yes | Default price in BDT |
-| `maxCapacity` | Number | Yes | Max simultaneous bookings |
-| `isActive` | Boolean | No | Default: `true` |
+| `venueId` | MongoId | Yes | Must belong to agent's organization |
+| `date` | DateString | Yes | Format: `YYYY-MM-DD` |
+| `startTime` | String | Yes | Format: `HH:mm` |
+| `endTime` | String | Yes | Format: `HH:mm` |
+| `slotPrice` | Number | Yes | Min: 0 |
+| `commissionAmount` | Number | No | Optional override |
+| `totalAmount` | Number | No | Optional override |
+| `status` | SlotStatus | No | Default: `draft` |
+
+---
+
+### POST /api/v1/venue-slots/admin
+Admin creates a slot. `organizationId` is resolved from the venue.
+
+**Auth:** Bearer token. Permission: `venue-slots:adminCreate`
+
+Same body as above — no `organizationId` needed.
+
+---
+
+### POST /api/v1/venue-slots/bulk
+Agent bulk-creates slots across a date range using venue's slot templates.
+
+**Auth:** Bearer token. Permission: `venue-slots:create`
+
+#### Request body (JSON)
+```json
+{
+  "venueId": "665f1a2b3c4d5e6f7a8b9c10",
+  "startDate": "2026-04-15",
+  "endDate": "2026-04-21"
+}
+```
+
+**Behaviour:** For each day in `[startDate, endDate]`, one `VenueSlot` document is created per entry in `Venue.slots[]` using `startTime`, `endTime`, and `price` from the template. All created slots default to `status: draft`.
+
+---
+
+### POST /api/v1/venue-slots/admin/bulk
+Admin bulk-creates slots. `organizationId` resolved from venue.
+
+**Auth:** Bearer token. Permission: `venue-slots:adminCreate`
+
+Same body as agent bulk.
+
+---
+
+### GET /api/v1/venue-slots
+Admin lists all slots across all organizations.
+
+**Auth:** Bearer token. Permission: `venue-slots:readAll`
+
+#### Query params
+| Param | Type | Description |
+|---|---|---|
+| `venueId` | MongoId | Filter by venue |
+| `date` | DateString | Filter by date (`YYYY-MM-DD`) |
+| `status` | SlotStatus | Filter by slot status |
+| `bookingStatus` | BookingStatus | Filter by booking status |
+
+---
+
+### GET /api/v1/venue-slots/mine
+Agent lists slots belonging to their own organization.
+
+**Auth:** Bearer token. Permission: `venue-slots:readMine`
+
+Same query params as above.
+
+---
+
+### GET /api/v1/venue-slots/:id
+
+**Auth:** Bearer token. Permission: `venue-slots:read`
+
+#### Response `200 OK`
+```json
+{
+  "_id": "665f2b3c4d5e6f7a8b9c0101",
+  "organizationId": "69d75680eeb57da0521b3152",
+  "venueId": { "_id": "...", "title": "Green Futsal Arena", "..." : "..." },
+  "date": "2026-04-15T00:00:00.000Z",
+  "startTime": "09:00",
+  "endTime": "10:00",
+  "slotPrice": 500,
+  "commissionAmount": 50,
+  "totalAmount": 550,
+  "status": "publish",
+  "bookingStatus": "booked",
+  "bookingInfo": {
+    "userId": { "_id": "...", "name": "Jameson", "phone": "+88017..." },
+    "paymentStatus": "pending_for_payment",
+    "bookingTime": "2026-04-14T12:34:00.000Z",
+    "paymentMethod": null,
+    "transactionId": null,
+    "paymentNumber": null
+  },
+  "bookingHistory": [...],
+  "createdAt": "2026-04-11T10:00:00.000Z",
+  "updatedAt": "2026-04-14T12:34:00.000Z"
+}
+```
+
+---
+
+### PATCH /api/v1/venue-slots/:id
+Agent updates a slot. **Allowed only when `status === "draft"`.**
+
+**Auth:** Bearer token. Permission: `venue-slots:update`
+
+#### Request body (JSON, all fields optional)
+```json
+{
+  "date": "2026-04-16",
+  "startTime": "10:00",
+  "endTime": "11:00",
+  "slotPrice": 600,
+  "commissionAmount": 60,
+  "totalAmount": 660,
+  "status": "draft"
+}
+```
+
+#### Error responses
+```json
+// 400 — slot is not in draft status
+{ "statusCode": 400, "message": "Venue slot can only be modified when in draft status" }
+
+// 404 — slot not found or not in agent's org
+{ "statusCode": 404, "message": "Venue slot not found or does not belong to your organization" }
+```
+
+---
+
+### PATCH /api/v1/venue-slots/admin/:id
+Admin updates any slot. **Allowed only when `status === "draft"`.**
+If `venueId` changes, `organizationId` is re-resolved from the new venue.
+
+**Auth:** Bearer token. Permission: `venue-slots:adminUpdate`
+
+---
+
+### PATCH /api/v1/venue-slots/:id/status
+Agent publishes or unpublishes a slot. **Not allowed when `bookingStatus === "booked"`.**
+
+**Auth:** Bearer token. Permission: `venue-slots:updateStatus`
+
+#### Request body
+```json
+{ "status": "publish" }
+```
+| Value | Description |
+|---|---|
+| `publish` | Make slot visible and bookable |
+| `unpublish` | Hide slot from booking |
+
+#### Error responses
+```json
+// 400 — slot is currently booked
+{ "statusCode": 400, "message": "Cannot change status of a booked slot" }
+
+// 404 — not found or wrong org
+{ "statusCode": 404, "message": "Venue slot not found or does not belong to your organization" }
+```
+
+---
+
+### PATCH /api/v1/venue-slots/admin/:id/status
+Admin publish/unpublish any slot. Same rules as agent.
+
+**Auth:** Bearer token. Permission: `venue-slots:adminUpdateStatus`
+
+---
+
+### POST /api/v1/venue-slots/:id/book
+**Agent** books a slot for a customer by phone number.
+
+**Auth:** Bearer token. Permission: `venue-slots:bookByAgent`
+
+#### Request body
+```json
+{ "userPhone": "+8801711000000" }
+```
+
+**Behaviour:**
+1. Slot must belong to agent's organization
+2. Slot must be `status === "publish"` and `bookingStatus !== "booked"`
+3. User found by phone — if not found, auto-created with `isActive: true` and `user` role
+4. Commission calculated from org settings; `totalAmount = slotPrice + commissionAmount`
+5. `bookingInfo` is set; entry pushed to `bookingHistory`; `bookingStatus` set to `booked`
+
+#### Error responses
+```json
+// 400 — slot not published
+{ "statusCode": 400, "message": "Slot is not available for booking" }
+
+// 400 — already booked
+{ "statusCode": 400, "message": "Slot is already booked" }
+```
+
+---
+
+### POST /api/v1/venue-slots/:id/book-user
+**Authenticated user** books a slot for themselves.
+
+**Auth:** Bearer token. Permission: `venue-slots:book`
+
+No request body — user identity taken from JWT.
+
+Same validation and booking logic as agent booking (slot must be `publish`, not already `booked`).
+
+---
+
+### DELETE /api/v1/venue-slots/:id
+Agent deletes a slot. **Allowed only when `status === "draft"`.**
+
+**Auth:** Bearer token. Permission: `venue-slots:delete`
+
+---
+
+### DELETE /api/v1/venue-slots/admin/:id
+Admin deletes any slot. **Allowed only when `status === "draft"`.**
+
+**Auth:** Bearer token. Permission: `venue-slots:adminDelete`
 
 ---
 
@@ -725,14 +1062,17 @@ Venue
   ├── categoryId     → Category._id
   └── features[]     → VenueFeature._id
 
-── Planned ──────────────────────────────────────────
+VenueSlot
+  ├── organizationId              → Organization._id
+  ├── venueId                     → Venue._id
+  ├── bookingInfo.userId          → User._id
+  └── bookingHistory[].userId     → User._id
 
-Slot
-  └── venueId → Venue._id
+── Planned ──────────────────────────────────────────
 
 Booking
   ├── userId   → User._id
-  ├── slotId   → Slot._id
+  ├── slotId   → VenueSlot._id
   └── venueId  → Venue._id (denormalized)
 
 WalletTransaction
