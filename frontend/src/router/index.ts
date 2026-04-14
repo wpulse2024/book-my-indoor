@@ -47,6 +47,7 @@ const router = createRouter({
       children: [
         { path: '', name: 'agent-dashboard', component: () => import('@/pages/agent/AgentDashboardPage.vue') },
         { path: 'venues',   name: 'agent-venues',   component: () => import('@/pages/agent/AgentVenuesPage.vue') },
+        { path: 'slots',    name: 'agent-slots',    component: () => import('@/pages/agent/AgentSlotsPage.vue') },
         { path: 'bookings', name: 'agent-bookings', component: () => import('@/pages/agent/AgentBookingsPage.vue') },
         { path: 'staff', name: 'agent-staff', component: () => import('@/pages/agent/AgentStaffPage.vue') },
         { path: 'settings', name: 'agent-settings', component: () => import('@/pages/agent/AgentSettingsPage.vue') },

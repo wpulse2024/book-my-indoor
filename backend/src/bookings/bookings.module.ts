@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Booking, BookingSchema } from './schemas/booking.schema';
 import { Venue, VenueSchema } from '../venues/schemas/venue.schema';
+import { VenueSlot, VenueSlotSchema } from '../venue-slots/schemas/venue-slot.schema';
 import { BookingsService } from './bookings.service';
 import { BookingsController } from './bookings.controller';
 
@@ -9,8 +10,8 @@ import { BookingsController } from './bookings.controller';
   imports: [
     MongooseModule.forFeature([
       { name: Booking.name, schema: BookingSchema },
-      // Venue model needed to look up embedded slot data during booking creation
       { name: Venue.name, schema: VenueSchema },
+      { name: VenueSlot.name, schema: VenueSlotSchema },
     ]),
   ],
   controllers: [BookingsController],

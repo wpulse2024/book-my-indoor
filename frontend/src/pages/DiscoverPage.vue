@@ -67,16 +67,9 @@ onMounted(() => {
   requestUserLocation()
 })
 
-// ─── Price bounds derived from actual venue data ───────────────────────────────
-const venueMinPrice = computed(() => {
-  const prices = allVenues.value.flatMap(v => (v.slots ?? []).map((s: any) => s.price)).filter(Boolean)
-  return prices.length ? Math.min(...prices) : 0
-})
-
-const venueMaxPrice = computed(() => {
-  const prices = allVenues.value.flatMap(v => (v.slots ?? []).map((s: any) => s.price)).filter(Boolean)
-  return prices.length ? Math.max(...prices) : 1000
-})
+// Price bounds — slots are now in a separate collection; static defaults
+const venueMinPrice = computed(() => 0)
+const venueMaxPrice = computed(() => 5000)
 
 function onSortChange(newSort: string) {
   q.sort = newSort
@@ -111,22 +104,8 @@ const filteredVenues = computed(() => {
     list = list.filter(v => v.categoryId?._id === q.categoryId || v.categoryId === q.categoryId)
   }
 
-  if (q.priceMax != null) {
-    list = list.filter(v => {
-      const min = v.slots?.length ? Math.min(...v.slots.map((s: any) => s.price)) : 0
-      return min <= q.priceMax!
-    })
-  }
-
-  if (q.timeFrom && q.timeTo) {
-    list = list.filter(v => {
-      if (!v.slots?.length) return false
-      return v.slots.some((s: any) => {
-        const start: string = s.start_time ?? s.startTime ?? s.time ?? ''
-        return start >= q.timeFrom && start < q.timeTo
-      })
-    })
-  }
+  // Price and time filtering by slot is no longer possible client-side
+  // (slots live in a separate collection). Filters are sent to server when API supports it.
 
   if (q.featureIds.length) {
     list = list.filter(v => {
@@ -145,12 +124,6 @@ const filteredVenues = computed(() => {
       const da = haversineKm(lat, lng, a.location?.lat ?? 0, a.location?.long ?? 0)
       const db = haversineKm(lat, lng, b.location?.lat ?? 0, b.location?.long ?? 0)
       return da - db
-    })
-  } else if (q.sort === 'Price Low to High') {
-    list.sort((a, b) => {
-      const pa = a.slots?.length ? Math.min(...a.slots.map((s: any) => s.price)) : 0
-      const pb = b.slots?.length ? Math.min(...b.slots.map((s: any) => s.price)) : 0
-      return pa - pb
     })
   } else if (q.sort === 'Top Rated') {
     list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
@@ -183,9 +156,9 @@ const typeGradients: Record<string, string> = {
 }
 
 function toCardProps(venue: any) {
-  const lowestPrice = venue.slots?.length
-    ? Math.min(...venue.slots.map((s: any) => s.price))
-    : 0
+  // Price is no longer embedded in the venue; slots live in a separate collection.
+  // Show 0 here; actual prices are visible when users pick a date on the venue detail page.
+  const lowestPrice = 0
   const catKey = (venue.categoryId?.title ?? '').toLowerCase().replace(/\s+/g, '_')
 
   const distanceStr = (() => {

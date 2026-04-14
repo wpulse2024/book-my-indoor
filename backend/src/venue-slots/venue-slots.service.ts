@@ -13,6 +13,9 @@ import { UpdateVenueSlotDto } from './dto/update-venue-slot.dto';
 import { UpdateSlotStatusDto } from './dto/update-slot-status.dto';
 import { BookSlotByAgentDto } from './dto/book-slot-by-agent.dto';
 import { FindVenueSlotsQueryDto } from './dto/find-venue-slots-query.dto';
+import { BulkUpdateVenueSlotsDto } from './dto/bulk-update-venue-slots.dto';
+import { BulkDeleteVenueSlotsDto } from './dto/bulk-delete-venue-slots.dto';
+import { BulkUpdateSlotStatusDto } from './dto/bulk-update-slot-status.dto';
 
 @Injectable()
 export class VenueSlotsService {
@@ -125,8 +128,8 @@ export class VenueSlotsService {
           date,
           startTime: slot.startTime,
           endTime: slot.endTime,
-          slotPrice: slot.price,
-          status: SlotStatus.DRAFT,
+          slotPrice: dto.slotPrice ?? slot.price,
+          status: dto.status ?? SlotStatus.PUBLISH,
         });
       }
       cursor.add(1, 'day');
@@ -135,27 +138,67 @@ export class VenueSlotsService {
     return docs;
   }
 
-  // ─── Queries ─────────────────────────────────────────────────────────────────
+  // ─── Public slot availability (no auth) ─────────────────────────────────────
 
-  findAll(query: FindVenueSlotsQueryDto): Promise<VenueSlotDocument[]> {
+  async findPublicByVenue(venueId: string, date: string): Promise<VenueSlotDocument[]> {
+    const parsedDate = this.parseDate(date);
     return this.venueSlotModel
-      .find(this.buildFilter(query))
-      .populate('venueId')
-      .populate('bookingInfo.userId')
+      .find({ venueId, date: parsedDate, status: SlotStatus.PUBLISH })
+      .select('startTime endTime slotPrice bookingStatus date')
+      .sort({ startTime: 1 })
       .lean()
-      .exec();
+      .exec() as unknown as VenueSlotDocument[];
   }
 
-  findAllByOrganization(
+  // ─── Queries ─────────────────────────────────────────────────────────────────
+
+  async findAll(
+    query: FindVenueSlotsQueryDto,
+  ): Promise<{ data: VenueSlotDocument[]; total: number; page: number; limit: number }> {
+    const filter = this.buildFilter(query);
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.venueSlotModel
+        .find(filter)
+        .sort({ date: 1, startTime: 1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('venueId')
+        .populate('bookingInfo.userId')
+        .lean()
+        .exec(),
+      this.venueSlotModel.countDocuments(filter),
+    ]);
+
+    return { data: data as VenueSlotDocument[], total, page, limit };
+  }
+
+  async findAllByOrganization(
     organizationId: string,
     query: FindVenueSlotsQueryDto,
-  ): Promise<VenueSlotDocument[]> {
-    return this.venueSlotModel
-      .find(this.buildFilter(query, { organizationId }))
-      .populate('venueId')
-      .populate('bookingInfo.userId')
-      .lean()
-      .exec();
+  ): Promise<{ data: VenueSlotDocument[]; total: number; page: number; limit: number }> {
+    const filter = this.buildFilter(query, { organizationId });
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.venueSlotModel
+        .find(filter)
+        .sort({ date: 1, startTime: 1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('venueId')
+        .populate('bookingInfo.userId')
+        .lean()
+        .exec(),
+      this.venueSlotModel.countDocuments(filter),
+    ]);
+
+    return { data: data as VenueSlotDocument[], total, page, limit };
   }
 
   async findOne(id: string): Promise<VenueSlotDocument> {
@@ -186,6 +229,26 @@ export class VenueSlotsService {
 
     return this.venueSlotModel
       .findOneAndUpdate({ _id: id, organizationId }, update, { new: true })
+      .populate('venueId')
+      .lean()
+      .exec() as Promise<VenueSlotDocument>;
+  }
+
+  // ─── Agent price update — allowed on any non-booked slot ────────────────────
+
+  async updatePriceByOrganization(
+    id: string,
+    organizationId: string,
+    slotPrice: number,
+  ): Promise<VenueSlotDocument> {
+    const slot = await this.venueSlotModel.findOne({ _id: id, organizationId }).lean().exec();
+    if (!slot) throw new NotFoundException('Venue slot not found or does not belong to your organization');
+    if (slot.bookingStatus === BookingStatus.BOOKED) {
+      throw new BadRequestException('Cannot update price of a booked slot');
+    }
+
+    return this.venueSlotModel
+      .findOneAndUpdate({ _id: id, organizationId }, { slotPrice }, { new: true })
       .populate('venueId')
       .lean()
       .exec() as Promise<VenueSlotDocument>;
@@ -376,5 +439,60 @@ export class VenueSlotsService {
       'Venue slot not found or does not belong to your organization',
     );
     await this.venueSlotModel.findOneAndDelete({ _id: id, organizationId });
+  }
+
+  // ─── Bulk Update ─────────────────────────────────────────────────────────────
+
+  async bulkUpdateByOrganization(
+    organizationId: string,
+    dto: BulkUpdateVenueSlotsDto,
+  ): Promise<{ modifiedCount: number }> {
+    const update: Record<string, any> = {};
+    if (dto.slotPrice !== undefined) update.slotPrice = dto.slotPrice;
+
+    if (!Object.keys(update).length) {
+      throw new BadRequestException('No fields provided to update');
+    }
+
+    const result = await this.venueSlotModel.updateMany(
+      { _id: { $in: dto.ids }, organizationId, status: SlotStatus.DRAFT },
+      { $set: update },
+    );
+
+    return { modifiedCount: result.modifiedCount };
+  }
+
+  // ─── Bulk Delete ─────────────────────────────────────────────────────────────
+
+  async bulkRemoveByOrganization(
+    organizationId: string,
+    dto: BulkDeleteVenueSlotsDto,
+  ): Promise<{ deletedCount: number }> {
+    const result = await this.venueSlotModel.deleteMany({
+      _id: { $in: dto.ids },
+      organizationId,
+      status: SlotStatus.DRAFT,
+    });
+
+    return { deletedCount: result.deletedCount };
+  }
+
+  // ─── Bulk Status Update ───────────────────────────────────────────────────────
+
+  async bulkUpdateStatusByOrganization(
+    organizationId: string,
+    dto: BulkUpdateSlotStatusDto,
+  ): Promise<{ modifiedCount: number }> {
+    // Never touch booked slots regardless of requested status
+    const result = await this.venueSlotModel.updateMany(
+      {
+        _id: { $in: dto.ids },
+        organizationId,
+        bookingStatus: { $ne: BookingStatus.BOOKED },
+      },
+      { $set: { status: dto.status } },
+    );
+
+    return { modifiedCount: result.modifiedCount };
   }
 }

@@ -5,7 +5,6 @@ import type {
   User,
   Venue,
   AvailableSlot,
-  Booking,
   WalletTransaction,
   PaginatedData,
   VenueFilters,
@@ -89,8 +88,8 @@ export const venueApi = {
   get: (slug: string) =>
     http.get<ApiSuccess<Venue>>(`/user/venues/${slug}`),
 
-  availableSlots: (slug: string, date: string) =>
-    http.get<ApiSuccess<AvailableSlot[]>>(`/user/venues/${slug}/slots/available`, { params: { date } }),
+  availableSlots: (venueId: string, date: string) =>
+    http.get<ApiSuccess<AvailableSlot[]>>(`/venue-slots/public`, { params: { venueId, date } }),
 
   reviews: (venueId: string, page = 1) =>
     http.get<ApiSuccess<PaginatedData<Review>>>(`/venues/${venueId}/reviews`, { params: { page } }),
@@ -248,6 +247,63 @@ export const categoryApi = {
 
   remove: (id: string) =>
     http.delete(`/categories/${id}`),
+}
+
+// ─── Agent Slot Management ────────────────────────────────────────────────────
+
+export const agentSlotApi = {
+  list: (query?: {
+    venueId?: string
+    date?: string
+    status?: string
+    bookingStatus?: string
+    page?: number
+    limit?: number
+  }) => http.get<any>('/venue-slots/mine', { params: query }),
+
+  get: (id: string) =>
+    http.get<any>(`/venue-slots/${id}`),
+
+  create: (data: {
+    venueId: string
+    date: string
+    startTime: string
+    endTime: string
+    slotPrice: number
+    status?: string
+  }) => http.post<any>('/venue-slots', data),
+
+  createBulk: (data: { venueId: string; startDate: string; endDate: string; slotPrice?: number }) =>
+    http.post<any>('/venue-slots/bulk', data),
+
+  updateStatus: (id: string, status: 'publish' | 'unpublish') =>
+    http.patch<any>(`/venue-slots/${id}/status`, { status }),
+
+  update: (id: string, data: Partial<{
+    venueId: string
+    date: string
+    startTime: string
+    endTime: string
+    slotPrice: number
+  }>) => http.patch<any>(`/venue-slots/${id}`, data),
+
+  updatePrice: (id: string, slotPrice: number) =>
+    http.patch<any>(`/venue-slots/${id}/price`, { slotPrice }),
+
+  bulkUpdate: (data: { ids: string[]; slotPrice?: number }) =>
+    http.patch<any>('/venue-slots/bulk', data),
+
+  bulkUpdateStatus: (data: { ids: string[]; status: 'publish' | 'unpublish' }) =>
+    http.patch<any>('/venue-slots/bulk/status', data),
+
+  bulkDelete: (data: { ids: string[] }) =>
+    http.delete<any>('/venue-slots/bulk', { data }),
+
+  bookByAgent: (id: string, userPhone: string) =>
+    http.post<any>(`/venue-slots/${id}/book`, { userPhone }),
+
+  remove: (id: string) =>
+    http.delete(`/venue-slots/${id}`),
 }
 
 // ─── Agent Venue Management ───────────────────────────────────────────────────

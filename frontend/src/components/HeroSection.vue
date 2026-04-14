@@ -70,7 +70,8 @@ onMounted(async () => {
       ? parseFloat((rated.reduce((sum, v) => sum + (v.rating ?? 0), 0) / rated.length).toFixed(1))
       : 0
 
-    totalSlots.value = venues.reduce((sum, v) => sum + (v.slots?.length ?? 0), 0)
+    // Slot count is no longer embedded in the venue object; omit from stats
+    totalSlots.value = 0
   } catch {
     // keep zeros — don't crash the page
   } finally {

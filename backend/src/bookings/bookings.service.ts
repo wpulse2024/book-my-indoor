@@ -15,6 +15,12 @@ import {
   PaymentStatus,
 } from './schemas/booking.schema';
 import { Venue, VenueDocument } from '../venues/schemas/venue.schema';
+import {
+  BookingStatus as SlotBookingStatus,
+  SlotStatus,
+  VenueSlot,
+  VenueSlotDocument,
+} from '../venue-slots/schemas/venue-slot.schema';
 import { CreateBookingDto } from './dto/create-booking.dto';
 
 const PER_PAGE = 20;
@@ -24,6 +30,7 @@ export class BookingsService {
   constructor(
     @InjectModel(Booking.name) private readonly bookingModel: Model<BookingDocument>,
     @InjectModel(Venue.name) private readonly venueModel: Model<VenueDocument>,
+    @InjectModel(VenueSlot.name) private readonly venueSlotModel: Model<VenueSlotDocument>,
   ) {}
 
   async createBooking(dto: CreateBookingDto, userId: string): Promise<BookingDocument> {
@@ -38,14 +45,18 @@ export class BookingsService {
       );
     }
 
-    // 2. Fetch venue and locate the slot (slots are embedded, not a separate collection)
-    const venue = await this.venueModel.findById(dto.venueId).lean().exec();
-    if (!venue) throw new NotFoundException('Venue not found');
-
-    const slot = (venue.slots as any[]).find(
-      (s: any) => s._id.toString() === dto.slotId,
-    );
-    if (!slot) throw new NotFoundException('Slot not found in this venue');
+    // 2. Look up the VenueSlot document (published slots in the dedicated collection)
+    const venueSlot = await this.venueSlotModel
+      .findOne({ _id: dto.slotId, venueId: dto.venueId })
+      .lean()
+      .exec();
+    if (!venueSlot) throw new NotFoundException('Slot not found in this venue');
+    if (venueSlot.status !== SlotStatus.PUBLISH) {
+      throw new BadRequestException('This slot is not available for booking');
+    }
+    if (venueSlot.bookingStatus === SlotBookingStatus.BOOKED) {
+      throw new ConflictException('This slot is already booked');
+    }
 
     // 3. Reject past dates
     const today = new Date().toISOString().split('T')[0];
@@ -61,9 +72,9 @@ export class BookingsService {
       userId: new Types.ObjectId(userId),
       guestName: dto.guestName,
       bookingDate: dto.bookingDate,
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-      price: slot.price,
+      startTime: venueSlot.startTime,
+      endTime: venueSlot.endTime,
+      price: venueSlot.slotPrice,
       status: BookingStatus.CONFIRMED,
       paymentMethod: dto.paymentMethod,
       paymentStatus: PaymentStatus.UNPAID,
@@ -72,19 +83,32 @@ export class BookingsService {
       notes: dto.notes,
     };
 
-    // 5. Insert — compound unique index handles double-booking atomically
+    // 5. Insert booking — compound unique index handles double-booking atomically
+    let booking: BookingDocument;
     try {
-      return await this.bookingModel.create(payload);
+      booking = await this.bookingModel.create(payload);
     } catch (err: any) {
       if (err.code === 11000) {
         if (err.keyPattern?.bookingRef) {
-          // Extremely rare ref collision — retry once with a new ref
-          return this.bookingModel.create({ ...payload, bookingRef: this.generateBookingRef() });
+          booking = await this.bookingModel.create({ ...payload, bookingRef: this.generateBookingRef() });
+        } else {
+          throw new ConflictException('This slot is already booked for the selected date');
         }
-        throw new ConflictException('This slot is already booked for the selected date');
+      } else {
+        throw err;
       }
-      throw err;
     }
+
+    // 6. Mark the VenueSlot as booked
+    await this.venueSlotModel.findByIdAndUpdate(dto.slotId, {
+      bookingStatus: SlotBookingStatus.BOOKED,
+      bookingInfo: {
+        userId: new Types.ObjectId(userId),
+        bookingTime: new Date(),
+      },
+    });
+
+    return booking;
   }
 
   async getUserBookings(userId: string, page = 1) {

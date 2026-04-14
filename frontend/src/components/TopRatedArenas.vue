@@ -11,7 +11,6 @@ interface RawVenue {
   location?: { title?: string; lat?: number; long?: number }
   rating?: number
   images?: string[]
-  slots?: Array<{ startTime?: string; endTime?: string; price?: number }>
   categoryId?: { _id: string; title: string; image?: string } | null
   features?: Array<{ _id: string; name: string; icon?: string }>
   organizationId?: string
@@ -52,7 +51,8 @@ const gradients = [
 ]
 
 function mapToCard(v: RawVenue): CardVenue {
-  const prices = (v.slots ?? []).map(s => s.price ?? 0).filter(p => p > 0)
+  // Slot prices are now in a separate venue-slots collection — not embedded in the venue.
+  const prices: number[] = []
   const tags = v.features?.length
     ? v.features.map(f => f.name).slice(0, 3)
     : [v.categoryId?.title ?? 'Indoor']

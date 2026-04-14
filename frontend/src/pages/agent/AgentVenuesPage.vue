@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { agentVenueApi, categoryApi, venueFeatureApi, assetUrl } from '@/services/api'
 import { useAuthStore } from '@/stores/auth.store'
+
+const router = useRouter()
 
 const auth = useAuthStore()
 
@@ -75,7 +78,6 @@ function defaultForm() {
     locationLat: '',
     locationLong: '',
     features: [] as string[],
-    slots: [] as { startTime: string; endTime: string; price: string }[],
     images: null as FileList | null,
   }
 }
@@ -83,7 +85,7 @@ function defaultForm() {
 const form = ref(defaultForm())
 
 const totalVenues = computed(() => venues.value.length)
-const activeVenues = computed(() => venues.value.filter(v => (v.slots?.length ?? 0) > 0).length)
+const activeVenues = computed(() => venues.value.filter(v => v.status === 'active').length)
 
 async function loadVenues() {
   loading.value = true
@@ -113,13 +115,6 @@ onMounted(() => {
   loadLookups()
 })
 
-function resetSlotUI() {
-  generator.value = { from: '06:00', to: '22:00', duration: 60, price: '' }
-  generateError.value = ''
-  showCustomAdd.value = false
-  customSlot.value = { startTime: '', endTime: '', price: '' }
-}
-
 function openCreate() {
   editingVenue.value = null
   form.value = defaultForm()
@@ -127,7 +122,6 @@ function openCreate() {
   locationMode.value = 'maps'
   mapsUrl.value = ''
   mapsUrlError.value = ''
-  resetSlotUI()
   showModal.value = true
 }
 
@@ -137,7 +131,6 @@ function openEdit(venue: any) {
   locationMode.value = 'manual'
   mapsUrl.value = ''
   mapsUrlError.value = ''
-  resetSlotUI()
   form.value = {
     title: venue.title ?? '',
     description: venue.description ?? '',
@@ -146,11 +139,6 @@ function openEdit(venue: any) {
     locationLat: String(venue.location?.lat ?? ''),
     locationLong: String(venue.location?.long ?? ''),
     features: (venue.features ?? []).map((f: any) => (typeof f === 'string' ? f : f._id ?? '')),
-    slots: (venue.slots ?? []).map((s: any) => ({
-      startTime: s.startTime ?? '',
-      endTime: s.endTime ?? '',
-      price: String(s.price ?? ''),
-    })),
     images: null,
   }
   showModal.value = true
@@ -171,13 +159,6 @@ async function saveVenue() {
     }))
     if (form.value.features.length) {
       fd.append('features', JSON.stringify(form.value.features))
-    }
-    if (form.value.slots.length) {
-      fd.append('slots', JSON.stringify(form.value.slots.map(s => ({
-        startTime: s.startTime,
-        endTime: s.endTime,
-        price: parseFloat(s.price) || 0,
-      }))))
     }
     if (form.value.images) {
       Array.from(form.value.images).forEach(f => fd.append('images', f))
@@ -219,70 +200,6 @@ function toggleFeature(id: string) {
   else form.value.features.splice(idx, 1)
 }
 
-// ── Slot generator ──────────────────────────────────────────────────────────
-const DURATION_OPTIONS = [
-  { label: '30 min', value: 30 },
-  { label: '1 hr',   value: 60 },
-  { label: '1.5 hr', value: 90 },
-  { label: '2 hr',   value: 120 },
-  { label: '3 hr',   value: 180 },
-]
-
-const generator = ref({ from: '06:00', to: '22:00', duration: 60, price: '' })
-const showCustomAdd = ref(false)
-const customSlot = ref({ startTime: '', endTime: '', price: '' })
-const generateError = ref('')
-
-function minsToTime(mins: number): string {
-  return `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`
-}
-
-function formatTime(t: string): string {
-  if (!t) return ''
-  const [h, m] = t.split(':').map(Number)
-  const ampm = h >= 12 ? 'PM' : 'AM'
-  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`
-}
-
-function generateSlots() {
-  generateError.value = ''
-  const [fh, fm] = generator.value.from.split(':').map(Number)
-  const [th, tm] = generator.value.to.split(':').map(Number)
-  const fromMins = fh * 60 + fm
-  const toMins   = th * 60 + tm
-  const dur      = generator.value.duration
-
-  if (toMins <= fromMins) {
-    generateError.value = '"To" time must be after "From" time.'
-    return
-  }
-  if (toMins - fromMins < dur) {
-    generateError.value = 'Time range is shorter than the selected duration.'
-    return
-  }
-
-  const generated: typeof form.value.slots = []
-  for (let start = fromMins; start + dur <= toMins; start += dur) {
-    generated.push({
-      startTime: minsToTime(start),
-      endTime:   minsToTime(start + dur),
-      price:     generator.value.price,
-    })
-  }
-  form.value.slots = generated
-}
-
-function addCustomSlot() {
-  if (!customSlot.value.startTime || !customSlot.value.endTime) return
-  form.value.slots.push({ ...customSlot.value })
-  customSlot.value = { startTime: '', endTime: '', price: '' }
-  showCustomAdd.value = false
-}
-
-function removeSlot(i: number) {
-  form.value.slots.splice(i, 1)
-}
-
 function onImagesChange(e: Event) {
   form.value.images = (e.target as HTMLInputElement).files
 }
@@ -292,7 +209,7 @@ function venueCover(venue: any): string {
 }
 
 function venueIsActive(venue: any): boolean {
-  return (venue.slots?.length ?? 0) > 0
+  return venue.status === 'active'
 }
 </script>
 
@@ -405,14 +322,15 @@ function venueIsActive(venue: any): boolean {
           <!-- Stats -->
           <div class="grid grid-cols-2 gap-2 mb-4">
             <div class="bg-gray-50 rounded-xl p-3">
-              <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Slots</p>
-              <p class="text-xl font-black text-gray-900 mt-0.5 leading-none">{{ venue.slots?.length ?? 0 }}</p>
-              <p class="text-[10px] text-gray-500 font-medium mt-0.5 truncate">{{ venue.categoryId?.name ?? '—' }}</p>
+              <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Category</p>
+              <p class="text-sm font-black text-gray-900 mt-0.5 leading-snug truncate">{{ venue.categoryId?.title ?? venue.categoryId?.name ?? '—' }}</p>
             </div>
             <div class="bg-gray-50 rounded-xl p-3">
-              <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Today's Rev.</p>
-              <p class="text-xl font-black text-gray-900 mt-0.5 leading-none">$0.00</p>
-              <p class="text-[10px] text-gray-500 font-medium mt-0.5">No bookings</p>
+              <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Slots</p>
+              <button
+                @click.stop="router.push({ name: 'agent-slots', query: { venueId: venue._id } })"
+                class="text-sm font-black text-indigo-600 hover:underline mt-0.5 block"
+              >Manage →</button>
             </div>
           </div>
 
@@ -436,6 +354,7 @@ function venueIsActive(venue: any): boolean {
             </button>
             </template>
             <button
+              @click="router.push({ name: 'agent-slots', query: { venueId: venue._id } })"
               class="flex-1 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl transition-colors"
             >
               Manage Slots
@@ -645,161 +564,14 @@ function venueIsActive(venue: any): boolean {
               </div>
             </div>
 
-            <!-- Slots -->
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Slots</label>
-                <span v-if="form.slots.length" class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                  {{ form.slots.length }} slot{{ form.slots.length !== 1 ? 's' : '' }}
-                </span>
-              </div>
-
-              <!-- Quick generator panel -->
-              <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
-                <p class="text-xs font-bold text-gray-600 flex items-center gap-1.5">
-                  <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                  </svg>
-                  Quick Generate
-                </p>
-
-                <!-- Duration pills -->
-                <div class="flex flex-wrap gap-1.5">
-                  <button
-                    v-for="opt in DURATION_OPTIONS"
-                    :key="opt.value"
-                    type="button"
-                    @click="generator.duration = opt.value"
-                    class="text-xs font-bold px-3 py-1.5 rounded-lg border transition-colors"
-                    :class="generator.duration === opt.value
-                      ? 'bg-indigo-600 text-white border-indigo-600'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'"
-                  >
-                    {{ opt.label }}
-                  </button>
-                </div>
-
-                <!-- From / To / Price -->
-                <div class="grid grid-cols-3 gap-2">
-                  <div>
-                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Day starts</label>
-                    <input
-                      v-model="generator.from"
-                      type="time"
-                      class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 bg-white"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Day ends</label>
-                    <input
-                      v-model="generator.to"
-                      type="time"
-                      class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 bg-white"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Price per slot ($)</label>
-                    <input
-                      v-model="generator.price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0.00"
-                      class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 bg-white"
-                    />
-                  </div>
-                </div>
-
-                <p v-if="generateError" class="text-xs text-red-500">{{ generateError }}</p>
-
-                <button
-                  type="button"
-                  @click="generateSlots"
-                  class="w-full py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                  </svg>
-                  Generate Slots
-                  <span v-if="generator.from && generator.to && generator.duration" class="opacity-70">
-                    ({{ Math.floor((generator.to.split(':').reduce((a,b,i) => a + Number(b)*(i===0?60:1), 0) - generator.from.split(':').reduce((a,b,i) => a + Number(b)*(i===0?60:1), 0)) / generator.duration) }} slots)
-                  </span>
-                </button>
-              </div>
-
-              <!-- Slot chips -->
-              <div v-if="form.slots.length" class="flex flex-wrap gap-2">
-                <div
-                  v-for="(slot, i) in form.slots"
-                  :key="i"
-                  class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 group"
-                >
-                  <svg class="w-3 h-3 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  <span class="text-xs font-bold text-gray-700 whitespace-nowrap">
-                    {{ formatTime(slot.startTime) }} – {{ formatTime(slot.endTime) }}
-                  </span>
-                  <span class="flex items-center bg-indigo-50 rounded px-1.5 py-0.5">
-                    <span class="text-[10px] font-bold text-indigo-400">$</span>
-                    <input
-                      v-model="slot.price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0"
-                      class="w-10 text-[10px] font-bold text-indigo-600 bg-transparent outline-none border-0 p-0 ml-0.5"
-                    />
-                  </span>
-                  <button
-                    type="button"
-                    @click="removeSlot(i)"
-                    class="ml-0.5 w-4 h-4 flex items-center justify-center text-gray-300 hover:text-red-500 transition-colors rounded"
-                  >
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Add custom slot toggle -->
+            <!-- Slots info -->
+            <div class="flex items-start gap-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
+              <svg class="w-4 h-4 text-indigo-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
               <div>
-                <button
-                  type="button"
-                  @click="showCustomAdd = !showCustomAdd"
-                  class="text-xs font-bold text-gray-400 hover:text-indigo-600 flex items-center gap-1 transition-colors"
-                >
-                  <svg class="w-3.5 h-3.5 transition-transform" :class="showCustomAdd ? 'rotate-45' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-                  </svg>
-                  Add a custom slot
-                </button>
-
-                <Transition name="slide">
-                  <div v-if="showCustomAdd" class="mt-2 flex items-end gap-2 bg-gray-50 rounded-xl p-3">
-                    <div class="flex-1">
-                      <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Start</label>
-                      <input v-model="customSlot.startTime" type="time" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 bg-white"/>
-                    </div>
-                    <div class="flex-1">
-                      <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">End</label>
-                      <input v-model="customSlot.endTime" type="time" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 bg-white"/>
-                    </div>
-                    <div class="w-24">
-                      <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Price ($)</label>
-                      <input v-model="customSlot.price" type="number" min="0" step="0.01" placeholder="0.00" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 bg-white"/>
-                    </div>
-                    <button
-                      type="button"
-                      @click="addCustomSlot"
-                      :disabled="!customSlot.startTime || !customSlot.endTime"
-                      class="px-3 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 rounded-lg transition-colors flex-shrink-0"
-                    >
-                      Add
-                    </button>
-                  </div>
-                </Transition>
+                <p class="text-xs font-bold text-indigo-700">Slots are managed separately</p>
+                <p class="text-xs text-indigo-500 mt-0.5 leading-relaxed">After saving this venue, go to <strong>Pricing &amp; Slots</strong> to create and publish bookable time slots.</p>
               </div>
             </div>
 
@@ -904,19 +676,5 @@ function venueIsActive(venue: any): boolean {
   opacity: 0;
 }
 
-.slide-enter-active,
-.slide-leave-active {
-  transition: all 0.15s ease;
-  overflow: hidden;
-}
-.slide-enter-from,
-.slide-leave-to {
-  opacity: 0;
-  max-height: 0;
-}
-.slide-enter-to,
-.slide-leave-from {
-  opacity: 1;
-  max-height: 120px;
-}
+
 </style>

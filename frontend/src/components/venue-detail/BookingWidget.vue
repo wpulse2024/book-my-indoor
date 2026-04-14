@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import BookingModal from '@/components/BookingModal.vue'
-import { assetUrl } from '@/services/api'
-import http from '@/services/api'
+import { assetUrl, venueApi } from '@/services/api'
 
 const props = defineProps<{
   venue: any
-  lowestPrice: number
 }>()
 
 const showModal = ref(false)
@@ -14,25 +12,46 @@ const showModal = ref(false)
 const today = new Date().toISOString().split('T')[0]
 const selectedDate = ref(today)
 
+/** Next 7 days (including today) shown as quick-pick chips. */
+const dateChips = computed(() => {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() + i)
+    const value = d.toISOString().split('T')[0]
+    return {
+      value,
+      dayShort: d.toLocaleDateString('en-US', { weekday: 'short' }),
+      dayNum: d.getDate(),
+      monthShort: d.toLocaleDateString('en-US', { month: 'short' }),
+      isToday: i === 0,
+    }
+  })
+})
+
 // Slot availability fetched per date
 const slotsWithStatus = ref<any[]>([])
 const loadingSlots = ref(false)
+
+/** Normalise a slot from the venue-slots collection to a common shape used by the template. */
+function normaliseSlot(s: any) {
+  const isBooked = s.bookingStatus === 'booked'
+  return {
+    ...s,
+    // New schema uses slotPrice; old schema used price — support both
+    price: s.slotPrice ?? s.price ?? 0,
+    isBooked,
+  }
+}
 
 async function fetchSlotAvailability(date: string) {
   if (!props.venue?._id) return
   loadingSlots.value = true
   try {
-    const res = await http.get<any[]>('/bookings/slot-availability', {
-      params: { venueId: props.venue._id, date },
-    })
-    slotsWithStatus.value = res.data
+    const res = await venueApi.availableSlots(props.venue._id, date)
+    const raw = res.data?.data ?? res.data ?? []
+    slotsWithStatus.value = (Array.isArray(raw) ? raw : []).map(normaliseSlot)
   } catch {
-    // Fall back to static slots without availability info
-    slotsWithStatus.value = (props.venue?.slots ?? []).map((s: any) => ({
-      ...s,
-      bookingStatus: null,
-      isBooked: false,
-    }))
+    slotsWithStatus.value = []
   } finally {
     loadingSlots.value = false
   }
@@ -45,6 +64,11 @@ watch(selectedDate, (date) => {
 })
 
 const availableSlots = computed(() => slotsWithStatus.value.filter((s: any) => !s.isBooked))
+
+const lowestPrice = computed(() => {
+  const prices = slotsWithStatus.value.map((s: any) => Number(s.price) || 0).filter(p => p > 0)
+  return prices.length ? Math.min(...prices) : 0
+})
 
 const selectedSlotId = ref<string>('')
 
@@ -71,17 +95,6 @@ const PLATFORM_FEE = 0
 const sessionCost = computed(() => selectedSlot.value ? Number(selectedSlot.value.price) || 0 : 0)
 const total = computed(() => sessionCost.value + PLATFORM_FEE)
 
-const displayDate = computed(() => {
-  if (!selectedDate.value) return 'Select date'
-  const d = new Date(selectedDate.value)
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-})
-
-const dayName = computed(() => {
-  if (!selectedDate.value) return ''
-  const d = new Date(selectedDate.value + 'T00:00:00')
-  return d.toLocaleDateString('en-US', { weekday: 'long' })
-})
 
 const timeSlotLabel = computed(() => {
   if (!selectedSlot.value) return ''
@@ -128,17 +141,39 @@ function isSelected(slot: any): boolean {
     <div class="bg-white rounded-t-2xl px-5 py-5 space-y-5">
       <!-- Select Date -->
       <div>
-        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Select Date</p>
-        <label class="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-3 cursor-pointer hover:border-blue-400 transition-colors">
-          <div>
-            <p class="font-black text-gray-900 text-base">{{ displayDate }}</p>
-            <p class="text-gray-400 text-xs mt-0.5">{{ dayName }}</p>
-          </div>
-          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <input v-model="selectedDate" type="date" :min="today" class="sr-only" />
-        </label>
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs font-black text-gray-400 uppercase tracking-widest">Select Date</p>
+          <!-- Calendar input for dates beyond the 7-day strip -->
+          <label class="flex items-center gap-1 text-xs font-bold text-blue-600 cursor-pointer hover:text-blue-800 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Pick date
+            <input v-model="selectedDate" type="date" :min="today" class="sr-only" />
+          </label>
+        </div>
+        <!-- 7-day chip strip -->
+        <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+          <button
+            v-for="chip in dateChips"
+            :key="chip.value"
+            @click="selectedDate = chip.value"
+            :class="[
+              'flex-shrink-0 flex flex-col items-center rounded-xl px-3 py-2 border transition-all text-center min-w-[52px]',
+              selectedDate === chip.value
+                ? 'bg-blue-700 border-blue-700 text-white shadow-md'
+                : 'border-gray-200 text-gray-700 hover:border-blue-400 bg-white'
+            ]"
+          >
+            <span :class="['text-[10px] font-bold uppercase', selectedDate === chip.value ? 'text-blue-200' : 'text-gray-400']">
+              {{ chip.isToday ? 'Today' : chip.dayShort }}
+            </span>
+            <span class="text-base font-black leading-tight">{{ chip.dayNum }}</span>
+            <span :class="['text-[10px]', selectedDate === chip.value ? 'text-blue-200' : 'text-gray-400']">
+              {{ chip.monthShort }}
+            </span>
+          </button>
+        </div>
       </div>
 
       <!-- Slots -->

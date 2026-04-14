@@ -45,11 +45,7 @@ const amenities = computed(() =>
   }))
 )
 
-const lowestPrice = computed(() => {
-  const slots = venue.value?.slots ?? []
-  if (!slots.length) return 0
-  return Math.min(...slots.map((s: any) => Number(s.price) || 0))
-})
+// lowestPrice is now computed inside BookingWidget from the loaded venue-slots
 
 const categoryLabel = computed(() => {
   const cat = venue.value?.categoryId
@@ -134,13 +130,6 @@ const categoryLabel = computed(() => {
                 </svg>
                 {{ venue.location.title }}
               </span>
-              <span v-if="venue.slots?.length" class="text-gray-200">•</span>
-              <span v-if="venue.slots?.length" class="flex items-center gap-1">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                {{ venue.slots.length }} Time Slots
-              </span>
             </div>
 
             <p v-if="venue.description" class="text-gray-500 text-sm leading-relaxed max-w-xl">
@@ -160,7 +149,7 @@ const categoryLabel = computed(() => {
 
         <!-- Right: booking widget -->
         <div class="w-80 flex-shrink-0">
-          <BookingWidget :venue="venue" :lowest-price="lowestPrice" />
+          <BookingWidget :venue="venue" />
         </div>
       </div>
 

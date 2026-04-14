@@ -17,6 +17,9 @@ import { UpdateVenueSlotDto } from './dto/update-venue-slot.dto';
 import { UpdateSlotStatusDto } from './dto/update-slot-status.dto';
 import { BookSlotByAgentDto } from './dto/book-slot-by-agent.dto';
 import { FindVenueSlotsQueryDto } from './dto/find-venue-slots-query.dto';
+import { BulkUpdateVenueSlotsDto } from './dto/bulk-update-venue-slots.dto';
+import { BulkDeleteVenueSlotsDto } from './dto/bulk-delete-venue-slots.dto';
+import { BulkUpdateSlotStatusDto } from './dto/bulk-update-slot-status.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermissions } from '../common/decorators/permissions.decorator';
@@ -82,6 +85,18 @@ export class VenueSlotsController {
     return this.venueSlotsService.findAllByOrganization(user.organization.toString(), query);
   }
 
+  // Public — returns published slots for a venue on a given date (no auth)
+  @Get('public')
+  findPublic(
+    @Query('venueId') venueId: string,
+    @Query('date') date: string,
+  ) {
+    if (!venueId || !date) {
+      throw new BadRequestException('venueId and date are required');
+    }
+    return this.venueSlotsService.findPublicByVenue(venueId, date);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions('venue-slots:readMine')
@@ -110,6 +125,21 @@ export class VenueSlotsController {
   @RequirePermissions('venue-slots:adminUpdateStatus')
   updateStatusAsAdmin(@Param('id') id: string, @Body() dto: UpdateSlotStatusDto) {
     return this.venueSlotsService.updateStatus(id, dto);
+  }
+
+  // Agent — updates price of any non-booked slot (draft, publish, or unpublish)
+  @Patch(':id/price')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('venue-slots:update')
+  updatePrice(
+    @Param('id') id: string,
+    @Body('slotPrice') slotPrice: number,
+    @CurrentUser() user: any,
+  ) {
+    if (!user.organization) {
+      throw new BadRequestException('Your account is not linked to any organization');
+    }
+    return this.venueSlotsService.updatePriceByOrganization(id, user.organization.toString(), slotPrice);
   }
 
   // Agent — updates only slots belonging to their own organization
@@ -156,6 +186,39 @@ export class VenueSlotsController {
   @RequirePermissions('venue-slots:book')
   bookByUser(@Param('id') id: string, @CurrentUser() user: any) {
     return this.venueSlotsService.bookByUser(id, user._id.toString());
+  }
+
+  // Agent — bulk update draft slots (e.g. price) within their own organization
+  @Patch('bulk')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('venue-slots:update')
+  bulkUpdate(@Body() dto: BulkUpdateVenueSlotsDto, @CurrentUser() user: any) {
+    if (!user.organization) {
+      throw new BadRequestException('Your account is not linked to any organization');
+    }
+    return this.venueSlotsService.bulkUpdateByOrganization(user.organization.toString(), dto);
+  }
+
+  // Agent — bulk publish / unpublish slots within their own organization
+  @Patch('bulk/status')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('venue-slots:updateStatus')
+  bulkUpdateStatus(@Body() dto: BulkUpdateSlotStatusDto, @CurrentUser() user: any) {
+    if (!user.organization) {
+      throw new BadRequestException('Your account is not linked to any organization');
+    }
+    return this.venueSlotsService.bulkUpdateStatusByOrganization(user.organization.toString(), dto);
+  }
+
+  // Agent — bulk delete draft slots within their own organization
+  @Delete('bulk')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('venue-slots:delete')
+  bulkRemove(@Body() dto: BulkDeleteVenueSlotsDto, @CurrentUser() user: any) {
+    if (!user.organization) {
+      throw new BadRequestException('Your account is not linked to any organization');
+    }
+    return this.venueSlotsService.bulkRemoveByOrganization(user.organization.toString(), dto);
   }
 
   // Agent — deletes only slots belonging to their own organization
