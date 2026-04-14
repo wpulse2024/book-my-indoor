@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { reactive, ref, computed, onMounted } from 'vue'
+import { reactive, ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import TheNavbar from '@/components/TheNavbar.vue'
 import TheFooter from '@/components/TheFooter.vue'
 import DiscoverFilters from '@/components/discover/DiscoverFilters.vue'
@@ -9,11 +10,15 @@ import DiscoverHeader from '@/components/discover/DiscoverHeader.vue'
 import DiscoverPagination from '@/components/discover/DiscoverPagination.vue'
 import http, { assetUrl } from '@/services/api'
 
+const route = useRoute()
+
 const PER_PAGE = 6
 
 const q = reactive({
   sort: 'Near Me',
   page: 1,
+  search: '',
+  type: '',
   categoryId: '',
   date: '',
   timeFrom: '',
@@ -23,9 +28,48 @@ const q = reactive({
   minRating: 0,
 })
 
+// Passed as props to DiscoverFilters so the sidebar pre-selects the right values
+const initialCategoryId = ref('')
+const initialDate = ref('')
+
+function initFromQuery() {
+  const rq = route.query
+  q.search = typeof rq.search === 'string' ? rq.search : ''
+  q.type = typeof rq.type === 'string' ? rq.type : ''
+  q.date = typeof rq.date === 'string' ? rq.date : ''
+  q.categoryId = typeof rq.categoryId === 'string' ? rq.categoryId : ''
+  initialCategoryId.value = q.categoryId
+  initialDate.value = q.date
+  q.page = 1
+}
+
+watch(() => route.query, () => { initFromQuery() }, { deep: true })
+
 const allVenues = ref<any[]>([])
 const loading = ref(false)
 const error = ref('')
+
+// null = no date filter active; string[] = venue IDs that have slots on q.date
+const availableVenueIds = ref<string[] | null>(null)
+const slotsLoading = ref(false)
+
+async function fetchAvailableVenues(date: string) {
+  if (!date) {
+    availableVenueIds.value = null
+    return
+  }
+  slotsLoading.value = true
+  try {
+    const res = await http.get<string[]>('/venue-slots/public/venues', { params: { date } })
+    availableVenueIds.value = Array.isArray(res.data) ? res.data : []
+  } catch {
+    availableVenueIds.value = null
+  } finally {
+    slotsLoading.value = false
+  }
+}
+
+watch(() => q.date, fetchAvailableVenues)
 
 // ─── Geolocation ──────────────────────────────────────────────────────────────
 const userLocation = ref<{ lat: number; lng: number } | null>(null)
@@ -63,6 +107,7 @@ async function fetchVenues() {
 }
 
 onMounted(() => {
+  initFromQuery()
   fetchVenues()
   requestUserLocation()
 })
@@ -86,6 +131,8 @@ function onFiltersChange(filters: {
   minRating: number
 }) {
   q.categoryId = filters.categoryId
+  // When sidebar clears category, also clear type so type-pill filter doesn't persist
+  if (!filters.categoryId) q.type = ''
   q.date = filters.date
   q.timeFrom = filters.timeFrom
   q.timeTo = filters.timeTo
@@ -100,12 +147,33 @@ function onFiltersChange(filters: {
 const filteredVenues = computed(() => {
   let list = [...allVenues.value]
 
+  // Text search — matches venue name or area
+  if (q.search) {
+    const s = q.search.toLowerCase()
+    list = list.filter(v =>
+      (v.title ?? '').toLowerCase().includes(s) ||
+      (v.location?.title ?? '').toLowerCase().includes(s)
+    )
+  }
+
   if (q.categoryId) {
     list = list.filter(v => v.categoryId?._id === q.categoryId || v.categoryId === q.categoryId)
+  } else if (q.type) {
+    // Sport-type pill from HeroSection (e.g. 'badminton', 'cricket_turf')
+    list = list.filter(v => {
+      const title = (v.categoryId?.title ?? '').toLowerCase().replace(/\s+/g, '_')
+      return title === q.type
+    })
   }
 
   // Price and time filtering by slot is no longer possible client-side
   // (slots live in a separate collection). Filters are sent to server when API supports it.
+
+  // Date filter — keep only venues that have an available slot on that date
+  if (q.date && availableVenueIds.value !== null) {
+    const ids = new Set(availableVenueIds.value)
+    list = list.filter(v => ids.has((v._id ?? '').toString()))
+  }
 
   if (q.featureIds.length) {
     list = list.filter(v => {
@@ -197,6 +265,8 @@ function toCardProps(venue: any) {
         <DiscoverFilters
           :price-floor="venueMinPrice"
           :price-ceiling="venueMaxPrice"
+          :initial-category-id="initialCategoryId"
+          :initial-date="initialDate"
           @change="onFiltersChange"
         />
 
@@ -205,11 +275,11 @@ function toCardProps(venue: any) {
           <DiscoverHeader
             :sort="q.sort"
             @update:sort="onSortChange"
-            :total="loading ? undefined : filteredVenues.length"
+            :total="(loading || slotsLoading) ? undefined : filteredVenues.length"
           />
 
           <!-- Loading skeleton -->
-          <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div v-if="loading || slotsLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div v-for="i in 4" :key="i" class="bg-white rounded-2xl overflow-hidden border border-gray-100 animate-pulse">
               <div class="bg-gray-200" style="height: 220px;"></div>
               <div class="p-5 space-y-3">
@@ -225,7 +295,12 @@ function toCardProps(venue: any) {
 
           <!-- Empty state -->
           <div v-else-if="!pagedVenues.length" class="text-center py-16 text-gray-400 text-sm">
-            No venues found. Try adjusting your filters.
+            <template v-if="q.date && availableVenueIds !== null && availableVenueIds.length === 0">
+              No venues have available slots on this date. Try a different date.
+            </template>
+            <template v-else>
+              No venues found. Try adjusting your filters.
+            </template>
           </div>
 
           <!-- Results grid -->
@@ -240,7 +315,7 @@ function toCardProps(venue: any) {
 
           <!-- Pagination -->
           <DiscoverPagination
-            v-if="!loading && totalPages > 1"
+            v-if="!loading && !slotsLoading && totalPages > 1"
             v-model="q.page"
             :total-pages="totalPages"
           />

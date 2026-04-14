@@ -150,6 +150,20 @@ export class VenueSlotsService {
       .exec() as unknown as VenueSlotDocument[];
   }
 
+  // ─── Public: venue IDs that have at least one available slot on a date ───────
+
+  async findVenueIdsWithAvailability(date: string): Promise<string[]> {
+    const parsedDate = this.parseDate(date);
+    const ids = await this.venueSlotModel
+      .distinct('venueId', {
+        date: parsedDate,
+        status: SlotStatus.PUBLISH,
+        bookingStatus: { $ne: BookingStatus.BOOKED },
+      })
+      .exec();
+    return (ids as any[]).map((id) => id.toString());
+  }
+
   // ─── Queries ─────────────────────────────────────────────────────────────────
 
   async findAll(

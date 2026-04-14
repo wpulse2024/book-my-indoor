@@ -97,6 +97,15 @@ export class VenueSlotsController {
     return this.venueSlotsService.findPublicByVenue(venueId, date);
   }
 
+  // Public — returns venue IDs that have at least one available slot on a date (no auth)
+  @Get('public/venues')
+  findVenuesWithAvailability(@Query('date') date: string) {
+    if (!date) {
+      throw new BadRequestException('date is required');
+    }
+    return this.venueSlotsService.findVenueIdsWithAvailability(date);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions('venue-slots:readMine')

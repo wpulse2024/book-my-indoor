@@ -5,6 +5,8 @@ import { categoryApi, venueFeatureApi } from '@/services/api'
 const props = defineProps<{
   priceFloor: number
   priceCeiling: number
+  initialCategoryId?: string
+  initialDate?: string
 }>()
 
 const emit = defineEmits<{
@@ -55,7 +57,14 @@ onMounted(async () => {
   ])
   categories.value = catRes.data ?? []
   features.value = featRes.data ?? []
+  // Apply initial values from URL after data is ready
+  if (props.initialCategoryId) selectedCategoryId.value = props.initialCategoryId
+  if (props.initialDate) selectedDate.value = props.initialDate
 })
+
+// Re-apply when the parent navigates with different URL params
+watch(() => props.initialCategoryId, val => { selectedCategoryId.value = val ?? '' })
+watch(() => props.initialDate, val => { selectedDate.value = val ?? '' })
 
 // ─── Emit ─────────────────────────────────────────────────────────────────────
 function parseSlotTime(slot: string): { timeFrom: string; timeTo: string } {
