@@ -1,82 +1,123 @@
 <template>
-  <section class="relative overflow-hidden bg-gray-950 py-16 md:py-20 px-4 sm:px-6">
+  <section class="bg-white py-16 md:py-20 px-4 sm:px-6">
+    <div class="max-w-6xl mx-auto">
 
-    <!-- Dot-grid texture -->
-    <div
-      class="absolute inset-0 opacity-[0.03] pointer-events-none"
-      style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 28px 28px;"
-    ></div>
+      <div class="flex flex-col lg:flex-row items-start gap-12 lg:gap-16">
 
-    <!-- Blue accent glow left -->
-    <div
-      class="absolute -left-40 top-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
-      style="background: radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 60%);"
-    ></div>
+        <!-- ── Left: text + bullets + CTA ──────────────────────────────── -->
+        <div class="flex-1 max-w-lg">
 
-    <!-- Orange glow right -->
-    <div
-      class="absolute -right-20 top-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full pointer-events-none"
-      style="background: radial-gradient(circle, rgba(234,88,12,0.14) 0%, transparent 60%);"
-    ></div>
+          <!-- Badge -->
+          <div class="inline-flex items-center bg-blue-50 border border-blue-100 rounded-full px-3 py-1 mb-5">
+            <span class="text-blue-600 text-xs font-bold uppercase tracking-widest">For Venue Owners</span>
+          </div>
 
-    <div class="max-w-6xl mx-auto relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
+          <!-- Heading -->
+          <h2 class="font-black text-gray-900 leading-tight mb-2" style="font-size: clamp(1.8rem, 3.5vw, 2.6rem);">
+            Grow Your Business
+          </h2>
+          <p class="font-black leading-tight mb-5" style="font-size: clamp(1.8rem, 3.5vw, 2.6rem); color: #4361ee;">
+            List for Free!
+          </p>
 
-      <!-- Left: text -->
-      <div>
-        <div class="inline-flex items-center gap-2 bg-lime-400/10 border border-lime-400/20 rounded-full px-4 py-1.5 mb-5">
-          <span class="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
-          <span class="text-lime-400 text-xs font-bold uppercase tracking-widest">For Venue Owners</span>
+          <!-- Description -->
+          <p class="text-gray-500 text-sm leading-relaxed mb-7 max-w-sm">
+            Join hundreds of venue owners maximizing their bookings and revenue.
+            Zero commission, full control.
+          </p>
+
+          <!-- Bullet list -->
+          <ul class="space-y-3 mb-8">
+            <li v-for="item in features" :key="item" class="flex items-center gap-3 text-sm text-gray-700">
+              <span class="flex-shrink-0 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </span>
+              {{ item }}
+            </li>
+          </ul>
+
+          <!-- CTA button -->
+          <RouterLink
+            to="/login"
+            class="inline-flex items-center gap-2 text-white font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-md"
+            style="background: #4361ee;"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            Register Your Venue
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+          </RouterLink>
+
         </div>
 
-        <h2 class="font-black text-white uppercase leading-[0.9] mb-4" style="font-size: clamp(1.9rem, 4vw, 3rem);">
-          Own a Venue?<br />
-          <span class="text-lime-400">List it Today.</span>
-        </h2>
+        <!-- ── Right: 2×2 stat cards ────────────────────────────────────── -->
+        <div class="flex-shrink-0 w-full max-w-sm grid grid-cols-2 gap-4">
 
-        <p class="text-gray-400 text-sm leading-relaxed max-w-sm">
-          Join <span class="text-white font-semibold">100+ venues</span> already reaching
-          thousands of athletes through CourtKinetic. Zero setup fees. Start earning in minutes.
-        </p>
+          <!-- +145% Revenue Increase -->
+          <div class="bg-gray-50 border border-gray-100 rounded-2xl p-5">
+            <div class="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
+            </div>
+            <p class="text-gray-900 font-black text-2xl leading-none mb-1">+145%</p>
+            <p class="text-gray-500 text-xs">Revenue Increase</p>
+          </div>
 
-        <!-- Mini stats -->
-        <div class="flex items-center gap-6 mt-6">
-          <div>
-            <p class="text-white font-black text-lg leading-none">10k+</p>
-            <p class="text-gray-600 text-[11px] uppercase tracking-wide mt-0.5">Active Users</p>
+          <!-- 100% Secure Platform -->
+          <div class="bg-gray-50 border border-gray-100 rounded-2xl p-5">
+            <div class="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+            <p class="text-gray-900 font-black text-2xl leading-none mb-1">100%</p>
+            <p class="text-gray-500 text-xs">Secure Platform</p>
           </div>
-          <div class="w-px h-8 bg-gray-800"></div>
-          <div>
-            <p class="text-white font-black text-lg leading-none">৳0</p>
-            <p class="text-gray-600 text-[11px] uppercase tracking-wide mt-0.5">Setup Cost</p>
+
+          <!-- 500+ Active Venues -->
+          <div class="bg-gray-50 border border-gray-100 rounded-2xl p-5">
+            <div class="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <p class="text-gray-900 font-black text-2xl leading-none mb-1">500+</p>
+            <p class="text-gray-500 text-xs">Active Venues</p>
           </div>
-          <div class="w-px h-8 bg-gray-800"></div>
-          <div>
-            <p class="text-white font-black text-lg leading-none">24/7</p>
-            <p class="text-gray-600 text-[11px] uppercase tracking-wide mt-0.5">Support</p>
+
+          <!-- 5 min Quick Setup -->
+          <div class="bg-gray-50 border border-gray-100 rounded-2xl p-5">
+            <div class="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <p class="text-gray-900 font-black text-2xl leading-none mb-1">5 min</p>
+            <p class="text-gray-500 text-xs">Quick Setup</p>
           </div>
+
         </div>
+
       </div>
-
-      <!-- Right: CTA card -->
-      <div class="flex-shrink-0 bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm text-center min-w-[260px]">
-        <div class="w-14 h-14 bg-lime-400/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
-          <svg class="w-7 h-7 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-          </svg>
-        </div>
-        <p class="text-white font-black text-base mb-1.5">Ready to grow?</p>
-        <p class="text-gray-500 text-xs mb-6 leading-relaxed">
-          List your venue and get your first booking within 24 hours.
-        </p>
-        <RouterLink
-          to="/login"
-          class="block w-full bg-lime-400 hover:bg-lime-300 text-gray-950 font-black text-sm uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-lime-400/20"
-        >
-          Subscribe Your Venue
-        </RouterLink>
-        <p class="text-gray-700 text-xs mt-4">No credit card required</p>
-      </div>
-
     </div>
   </section>
 </template>
+
+<script setup lang="ts">
+const features = [
+  'Free venue listing - no hidden fees',
+  'Automated booking management system',
+  'Real-time revenue analytics dashboard',
+  'Secure payment processing',
+  '24/7 dedicated customer support',
+]
+</script>

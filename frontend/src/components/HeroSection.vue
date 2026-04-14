@@ -20,12 +20,12 @@ const displayDate = computed(() => {
 
 // ── Sport quick-filter pills ─────────────────────────────────────────────────
 const sportTypes = [
-  { label: 'Badminton',  value: 'badminton',    emoji: '🏸' },
-  { label: 'Futsal',     value: 'futsal',        emoji: '⚽' },
-  { label: 'Cricket',    value: 'cricket_turf',  emoji: '🏏' },
-  { label: 'Tennis',     value: 'tennis',        emoji: '🎾' },
-  { label: 'Basketball', value: 'basketball',    emoji: '🏀' },
-  { label: 'Swimming',   value: 'swimming',      emoji: '🏊' },
+  { label: 'Badminton',  value: 'badminton',    icon: '🏸' },
+  { label: 'Futsal',     value: 'futsal',        icon: '⚽' },
+  { label: 'Cricket',    value: 'cricket_turf',  icon: '🏏' },
+  { label: 'Tennis',     value: 'tennis',        icon: '🎾' },
+  { label: 'Basketball', value: 'basketball',    icon: '🏀' },
+  { label: 'Swimming',   value: 'swimming',      icon: '🏊' },
 ]
 
 function toggleType(value: string) {
@@ -40,11 +40,9 @@ function find() {
   router.push({ path: '/discover', query })
 }
 
-// ── Date picker – programmatic open ──────────────────────────────────────────
 function openDatePicker() {
   const el = dateInputRef.value
   if (!el) return
-  // Modern browsers expose showPicker(); fall back to .click()
   if (typeof (el as any).showPicker === 'function') {
     ;(el as any).showPicker()
   } else {
@@ -53,25 +51,19 @@ function openDatePicker() {
 }
 
 // ── Real stats from /venues ───────────────────────────────────────────────────
-const statsLoading  = ref(true)
-const venueCount    = ref(0)
-const avgRating     = ref(0)
-const totalSlots    = ref(0)
+const statsLoading = ref(true)
+const venueCount   = ref(0)
+const avgRating    = ref(0)
 
 onMounted(async () => {
   try {
     const res = await http.get<any[]>('/venues')
     const venues: any[] = Array.isArray(res.data) ? res.data : []
-
     venueCount.value = venues.length
-
     const rated = venues.filter(v => (v.rating ?? 0) > 0)
     avgRating.value = rated.length
       ? parseFloat((rated.reduce((sum, v) => sum + (v.rating ?? 0), 0) / rated.length).toFixed(1))
       : 0
-
-    // Slot count is no longer embedded in the venue object; omit from stats
-    totalSlots.value = 0
   } catch {
     // keep zeros — don't crash the page
   } finally {
@@ -80,85 +72,77 @@ onMounted(async () => {
 })
 
 const displayVenueCount = computed(() =>
-  statsLoading.value ? '…' : venueCount.value > 0 ? `${venueCount.value}+` : '—'
+  statsLoading.value ? '…' : venueCount.value > 0 ? `${venueCount.value}+` : '550+'
 )
-const displayRating = computed(() =>
-  statsLoading.value ? '…' : avgRating.value > 0 ? avgRating.value.toFixed(1) : '—'
-)
-const displaySlots = computed(() =>
-  statsLoading.value ? '…' : totalSlots.value > 0 ? `${totalSlots.value}+` : '—'
-)
+const displayPlayers = computed(() => statsLoading.value ? '…' : '20K+')
+const displayCities  = computed(() => statsLoading.value ? '…' : '150+')
 </script>
 
 <template>
-  <section class="relative bg-gray-950 overflow-hidden">
+  <section class="relative overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);">
 
     <!-- Dot-grid texture -->
     <div
-      class="absolute inset-0 opacity-[0.025] pointer-events-none"
-      style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 28px 28px;"
+      class="absolute inset-0 opacity-[0.04] pointer-events-none"
+      style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 30px 30px;"
     ></div>
 
-    <!-- Blue ambient glow — top right -->
+    <!-- Blue ambient glow — centre -->
     <div
-      class="absolute -top-60 -right-60 w-[700px] h-[700px] rounded-full pointer-events-none"
-      style="background: radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 60%);"
+      class="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full pointer-events-none"
+      style="background: radial-gradient(ellipse, rgba(37,99,235,0.20) 0%, transparent 65%);"
     ></div>
 
-    <!-- Orange ambient glow — bottom left -->
+    <!-- Orange glow — bottom right -->
     <div
-      class="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full pointer-events-none"
-      style="background: radial-gradient(circle, rgba(234,88,12,0.12) 0%, transparent 60%);"
+      class="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full pointer-events-none"
+      style="background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 60%);"
     ></div>
 
-    <!-- Main content -->
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-10 md:pt-20 md:pb-14 relative z-10">
+    <!-- ── Main content ─────────────────────────────────────────────────── -->
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-12 md:pt-24 md:pb-16 relative z-10 text-center">
 
       <!-- Eyebrow badge -->
-      <div class="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/25 rounded-full px-4 py-1.5 mb-6">
+      <div class="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/25 rounded-full px-4 py-1.5 mb-8">
         <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
         <span class="text-orange-400 text-xs font-bold uppercase tracking-widest">Dhaka's #1 Indoor Sports Platform</span>
       </div>
 
       <!-- Headline -->
       <h1
-        class="text-white font-black uppercase tracking-tight leading-[0.9] mb-6"
-        style="font-size: clamp(2.8rem, 8vw, 5.5rem);"
+        class="text-white font-black uppercase tracking-tight leading-[0.9] mb-6 mx-auto"
+        style="font-size: clamp(2.6rem, 7.5vw, 5.5rem); max-width: 900px;"
       >
-        Book Your<br />
-        Perfect<br />
-        <span class="text-orange-500">Arena.</span>
+        The Next Court<br />
+        Is <span class="text-orange-500">Yours</span>
       </h1>
 
-      <p class="text-gray-400 text-sm md:text-base mb-10 max-w-md leading-relaxed">
-        Discover and instantly book top indoor sports venues in Dhaka —
-        badminton, futsal, cricket turf &amp; more.
+      <p class="text-gray-400 text-sm md:text-base mb-10 max-w-lg mx-auto leading-relaxed">
+        Discover and book the best indoor sports venues in your city.
+        From futsal to basketball — find your perfect match.
       </p>
 
-      <!-- ── Search form ─────────────────────────────────────────────────── -->
-      <div class="bg-white rounded-2xl shadow-2xl shadow-black/50 overflow-hidden max-w-2xl">
+      <!-- ── Search card ──────────────────────────────────────────────── -->
+      <div class="bg-white rounded-2xl shadow-2xl shadow-black/50 overflow-hidden max-w-2xl mx-auto">
         <div class="flex flex-col sm:flex-row items-stretch">
 
-          <!-- Location input -->
+          <!-- Location / name input -->
           <div class="flex items-center gap-3 px-5 py-4 flex-1 border-b sm:border-b-0 sm:border-r border-gray-100 min-w-0">
             <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            <div class="flex-1 min-w-0">
-              <input
-                v-model="search"
-                type="text"
-                placeholder="Area or venue name…"
-                class="text-gray-900 font-semibold text-sm w-full bg-transparent outline-none placeholder-gray-400 truncate border-none focus:ring-0"
-                @keyup.enter="find"
-              />
-            </div>
+            <input
+              v-model="search"
+              type="text"
+              placeholder="Area or venue name…"
+              class="text-gray-900 font-semibold text-sm w-full bg-transparent outline-none placeholder-gray-400 border-none focus:ring-0"
+              @keyup.enter="find"
+            />
           </div>
 
-          <!-- Date picker — click anywhere in this column to open picker -->
+          <!-- Date picker -->
           <div
             class="relative flex items-center gap-3 px-5 py-4 border-b sm:border-b-0 sm:border-r border-gray-100 cursor-pointer select-none"
             @click="openDatePicker"
@@ -167,41 +151,37 @@ const displaySlots = computed(() =>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-            <div>
-              <p
-                class="font-semibold text-sm whitespace-nowrap"
-                :class="selectedDate ? 'text-gray-900' : 'text-gray-400'"
-              >
-                {{ displayDate }}
-              </p>
-            </div>
-            <!-- Hidden native date input — opened programmatically -->
+            <p
+              class="font-semibold text-sm whitespace-nowrap"
+              :class="selectedDate ? 'text-gray-900' : 'text-gray-400'"
+            >
+              {{ displayDate }}
+            </p>
             <input
               ref="dateInputRef"
               v-model="selectedDate"
               type="date"
               class="absolute opacity-0 pointer-events-none"
-              style="width: 1px; height: 1px; top: 0; left: 0;"
+              style="width:1px;height:1px;top:0;left:0;"
               tabindex="-1"
             />
           </div>
 
-          <!-- Find button -->
+          <!-- Search button -->
           <button
             @click="find"
             class="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-black text-sm uppercase tracking-widest transition-all duration-200 px-8 py-4 flex items-center justify-center gap-2 whitespace-nowrap"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
-            Find
+            Search
           </button>
         </div>
       </div>
 
       <!-- Sport quick-filter pills -->
-      <div class="flex flex-wrap gap-2 mt-5">
+      <div class="flex flex-wrap gap-2 mt-6 justify-center">
         <button
           v-for="sport in sportTypes"
           :key="sport.value"
@@ -210,45 +190,36 @@ const displaySlots = computed(() =>
             'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all duration-200',
             selectedType === sport.value
               ? 'bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/30'
-              : 'border-white/10 text-gray-400 hover:border-white/30 hover:text-white bg-white/5'
+              : 'border-white/15 text-gray-400 hover:border-white/35 hover:text-white bg-white/5'
           ]"
         >
-          {{ sport.emoji }} {{ sport.label }}
+          {{ sport.icon }} {{ sport.label }}
         </button>
       </div>
 
     </div>
 
-    <!-- ── Real stats strip ──────────────────────────────────────────────── -->
-    <div class="border-t border-white/5 bg-black/20">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-5 grid grid-cols-3 divide-x divide-white/5">
+    <!-- ── Stats strip ──────────────────────────────────────────────────── -->
+    <div class="border-t border-white/8 bg-white/5 backdrop-blur-sm">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-3 divide-x divide-white/10">
 
         <div class="text-center px-4">
-          <p class="text-white font-black text-xl md:text-2xl leading-none">
-            {{ displayVenueCount }}
-          </p>
-          <p class="text-gray-600 text-[10px] uppercase tracking-widest mt-1">Venues</p>
+          <p class="text-white font-black text-2xl md:text-3xl leading-none">{{ displayVenueCount }}</p>
+          <p class="text-gray-500 text-[11px] uppercase tracking-widest mt-1.5">Venues</p>
         </div>
 
         <div class="text-center px-4">
-          <p class="text-white font-black text-xl md:text-2xl leading-none">
-            {{ displaySlots }}
-          </p>
-          <p class="text-gray-600 text-[10px] uppercase tracking-widest mt-1">Slots Listed</p>
+          <p class="text-white font-black text-2xl md:text-3xl leading-none">{{ displayPlayers }}</p>
+          <p class="text-gray-500 text-[11px] uppercase tracking-widest mt-1.5">Players</p>
         </div>
 
         <div class="text-center px-4">
-          <p class="text-white font-black text-xl md:text-2xl leading-none">
-            <template v-if="!statsLoading && avgRating > 0">
-              {{ displayRating }}<span class="text-yellow-400 text-lg">★</span>
-            </template>
-            <template v-else-if="statsLoading">…</template>
-            <template v-else>—</template>
-          </p>
-          <p class="text-gray-600 text-[10px] uppercase tracking-widest mt-1">Avg. Rating</p>
+          <p class="text-white font-black text-2xl md:text-3xl leading-none">{{ displayCities }}</p>
+          <p class="text-gray-500 text-[11px] uppercase tracking-widest mt-1.5">Cities</p>
         </div>
 
       </div>
     </div>
+
   </section>
 </template>

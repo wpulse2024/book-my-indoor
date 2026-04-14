@@ -95,13 +95,13 @@ onBeforeUnmount(()    => document.removeEventListener('mousedown', handleClickOu
           <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white"></span>
         </button>
 
-        <!-- Guest: Sign In button (desktop) -->
+        <!-- Guest: Get Started button (desktop) -->
         <RouterLink
           v-if="!auth.isLoggedIn"
           to="/login"
-          class="hidden sm:inline-flex ml-2 px-4 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-colors no-underline"
+          class="hidden sm:inline-flex ml-2 px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-black uppercase tracking-wide rounded-lg transition-colors no-underline shadow-sm"
         >
-          Sign In
+          Get Started
         </RouterLink>
 
         <!-- Logged in: Profile dropdown (desktop) -->
@@ -283,9 +283,9 @@ onBeforeUnmount(()    => document.removeEventListener('mousedown', handleClickOu
             v-else
             to="/login"
             @click="closeMobile"
-            class="block w-full text-center bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-2.5 rounded-xl transition-colors no-underline"
+            class="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white text-sm font-black uppercase tracking-wide py-2.5 rounded-xl transition-colors no-underline"
           >
-            Sign In
+            Get Started
           </RouterLink>
         </div>
 
