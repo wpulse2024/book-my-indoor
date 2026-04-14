@@ -162,6 +162,14 @@ export const adminBookingApi = {
 // ─── Organizations (Agents) ──────────────────────────────────────────────────
 
 export const organizationApi = {
+  selfRegister: (data: {
+    title: string
+    ownerName: string
+    phone: string
+    email: string
+    password: string
+  }) => http.post<any>('/organizations/register', data),
+
   list: () =>
     http.get<any[]>('/organizations'),
 
@@ -186,6 +194,9 @@ export const organizationApi = {
     place: string
     description: string
   }>) => http.patch<any>(`/organizations/${id}`, data),
+
+  approve: (id: string) =>
+    http.patch<any>(`/organizations/${id}/approve`),
 
   remove: (id: string) =>
     http.delete(`/organizations/${id}`),

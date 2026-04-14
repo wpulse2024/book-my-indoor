@@ -40,7 +40,7 @@
 
           <!-- CTA button -->
           <RouterLink
-            to="/login"
+            to="/register"
             class="inline-flex items-center gap-2 text-white font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-md"
             style="background: #4361ee;"
           >

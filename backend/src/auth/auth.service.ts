@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -114,10 +115,14 @@ export class AuthService {
   }
 
   async validateUser(identifier: string) {
-    const user = await this.usersService.findByIdentifier(identifier);
+    const user = await this.usersService.findByIdentifierAny(identifier);
 
     if (!user) {
       throw new NotFoundException('No account found with that phone number.');
+    }
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Your account is pending admin approval. You will be notified once it is activated.');
     }
 
     return {

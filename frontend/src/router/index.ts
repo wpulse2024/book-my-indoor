@@ -12,6 +12,12 @@ const router = createRouter({
       meta: { guestOnly: true },
     },
     {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/pages/RegisterPage.vue'),
+      meta: { guestOnly: true },
+    },
+    {
       path: '/',
       name: 'home',
       component: () => import('@/pages/HomePage.vue'),

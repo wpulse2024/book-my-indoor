@@ -12,6 +12,7 @@ const showInviteModal = ref(false)
 const isSubmitting = ref(false)
 const deleteTarget = ref<any | null>(null)
 const isDeleting = ref(false)
+const approvingId = ref<string | null>(null)
 
 // ── Invite form ────────────────────────────────────────────────────────────
 const form = ref({
@@ -38,7 +39,8 @@ const filtered = computed(() => {
 
 const stats = computed(() => ({
   total: orgs.value.length,
-  active: orgs.value.filter(o => o.agentId?.isActive !== false).length,
+  active: orgs.value.filter(o => o.status === 'active' || (!o.status && o.agentId?.isActive !== false)).length,
+  pending: orgs.value.filter(o => o.status === 'pending').length,
 }))
 
 // ── Methods ────────────────────────────────────────────────────────────────
@@ -83,6 +85,19 @@ async function submitInvite() {
     formError.value = getMsg(e, 'Failed to create agent.')
   } finally {
     isSubmitting.value = false
+  }
+}
+
+async function approveOrg(org: any) {
+  approvingId.value = org._id
+  try {
+    const res = await organizationApi.approve(org._id)
+    const idx = orgs.value.findIndex(o => o._id === org._id)
+    if (idx !== -1) orgs.value[idx] = res.data
+  } catch (e) {
+    error.value = getMsg(e, 'Failed to approve agent.')
+  } finally {
+    approvingId.value = null
   }
 }
 
@@ -155,10 +170,6 @@ onMounted(loadOrgs)
         <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Total Agents</p>
         <div class="flex items-end gap-3">
           <p class="text-4xl font-black text-gray-900">{{ isLoading ? '—' : stats.total.toLocaleString() }}</p>
-          <span class="text-green-500 text-sm font-bold mb-1 flex items-center gap-0.5">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-            12%
-          </span>
         </div>
       </div>
       <div class="bg-white rounded-2xl border border-gray-100 px-6 py-5">
@@ -169,10 +180,10 @@ onMounted(loadOrgs)
         </div>
       </div>
       <div class="bg-white rounded-2xl border border-gray-100 px-6 py-5">
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Revenue Growth</p>
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Pending Approval</p>
         <div class="flex items-end gap-2">
-          <p class="text-4xl font-black text-gray-900">$42.8k</p>
-          <span class="text-gray-400 text-sm font-medium mb-1">Monthly</span>
+          <p class="text-4xl font-black text-gray-900">{{ isLoading ? '—' : stats.pending.toLocaleString() }}</p>
+          <span class="text-amber-500 text-sm font-bold mb-1">Review</span>
         </div>
       </div>
     </div>
@@ -258,18 +269,35 @@ onMounted(loadOrgs)
             <!-- Status -->
             <td class="px-5 py-4">
               <span
-                class="inline-flex items-center gap-1.5 text-xs font-bold"
-                :class="org.agentId?.isActive !== false ? 'text-green-600' : 'text-red-500'"
+                v-if="org.status === 'pending'"
+                class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600"
               >
-                <span class="w-1.5 h-1.5 rounded-full" :class="org.agentId?.isActive !== false ? 'bg-green-500' : 'bg-red-500'"></span>
-                {{ org.agentId?.isActive !== false ? 'Active' : 'Suspended' }}
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                Pending
+              </span>
+              <span
+                v-else-if="org.agentId?.isActive !== false"
+                class="inline-flex items-center gap-1.5 text-xs font-bold text-green-600"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                Active
+              </span>
+              <span v-else class="inline-flex items-center gap-1.5 text-xs font-bold text-red-500">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                Suspended
               </span>
             </td>
             <!-- Actions -->
             <td class="px-5 py-4 text-right">
               <div class="flex items-center justify-end gap-1">
-                <button class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <button
+                  v-if="org.status === 'pending'"
+                  @click="approveOrg(org)"
+                  :disabled="approvingId === org._id"
+                  class="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 disabled:opacity-50 rounded-lg transition-colors"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  {{ approvingId === org._id ? '...' : 'Approve' }}
                 </button>
                 <button
                   @click="deleteTarget = org"

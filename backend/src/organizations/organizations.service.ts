@@ -10,12 +10,15 @@ import * as bcrypt from 'bcrypt';
 import {
   Organization,
   OrganizationDocument,
+  COMMISSION_TYPE,
+  ORGANIZATION_STATUS,
 } from './schemas/organization.schema';
 import { Role, RoleDocument } from '../roles/schemas/role.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { CreateStaffDto } from './dto/create-staff.dto';
+import { SelfRegisterOrganizationDto } from './dto/self-register-organization.dto';
 
 @Injectable()
 export class OrganizationsService {
@@ -73,6 +76,68 @@ export class OrganizationsService {
     });
 
     return org.populate({ path: 'agentId', select: '-password' });
+  }
+
+  async selfRegister(dto: SelfRegisterOrganizationDto): Promise<{ message: string }> {
+    const existing = await this.orgModel.findOne({ title: dto.title });
+    if (existing) {
+      throw new ConflictException(`Organization '${dto.title}' already exists`);
+    }
+
+    const agentRole = await this.roleModel.findOne({ name: 'agent' });
+    if (!agentRole) {
+      throw new NotFoundException("Role 'agent' not found. Run the seeder first.");
+    }
+
+    const existingUser = await this.userModel.findOne({
+      $or: [
+        { phone: dto.phone },
+        ...(dto.email ? [{ email: dto.email }] : []),
+      ],
+    });
+    if (existingUser) {
+      throw new ConflictException('Phone or email is already registered');
+    }
+
+    const hashed = await bcrypt.hash(dto.password, 10);
+    const agentUser = await this.userModel.create({
+      name: dto.ownerName,
+      phone: dto.phone,
+      email: dto.email,
+      password: hashed,
+      roles: [agentRole._id],
+      isActive: false,
+    });
+
+    const org = await this.orgModel.create({
+      title: dto.title,
+      ownerName: dto.ownerName,
+      commissionType: COMMISSION_TYPE.percentage,
+      commissionAmount: 0,
+      agentId: agentUser._id,
+      status: ORGANIZATION_STATUS.pending,
+    });
+
+    await this.userModel.findByIdAndUpdate(agentUser._id, {
+      organization: org._id,
+    });
+
+    return { message: 'Registration submitted. You will be notified once your account is approved.' };
+  }
+
+  async approve(id: string): Promise<OrganizationDocument> {
+    const org = await this.orgModel.findById(id);
+    if (!org) throw new NotFoundException('Organization not found');
+
+    await this.userModel.findByIdAndUpdate(org.agentId, { isActive: true });
+
+    const updated = await this.orgModel
+      .findByIdAndUpdate(id, { status: ORGANIZATION_STATUS.active }, { new: true })
+      .populate({ path: 'agentId', select: '-password' })
+      .lean()
+      .exec();
+
+    return updated as OrganizationDocument;
   }
 
   findAll(): Promise<OrganizationDocument[]> {

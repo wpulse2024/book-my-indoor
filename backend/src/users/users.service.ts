@@ -61,7 +61,7 @@ export class UsersService {
     return user;
   }
 
-  /** Used internally by auth — includes password */
+  /** Used internally by auth — includes password, only active users */
   async findByIdentifier(identifier: string): Promise<UserDocument | null> {
     return this.userModel
       .findOne({
@@ -70,6 +70,15 @@ export class UsersService {
       })
       .select('+password')
       .populate({ path: 'roles', populate: { path: 'permissions' } })
+      .exec();
+  }
+
+  /** Returns user regardless of isActive — used to give better auth error messages */
+  async findByIdentifierAny(identifier: string): Promise<UserDocument | null> {
+    return this.userModel
+      .findOne({
+        $or: [{ phone: identifier }, { email: identifier }],
+      })
       .exec();
   }
 

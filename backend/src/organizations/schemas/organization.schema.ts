@@ -8,10 +8,19 @@ export enum COMMISSION_TYPE {
   percentage = 'percentage',
 }
 
+export enum ORGANIZATION_STATUS {
+  pending = 'pending',
+  active = 'active',
+  suspended = 'suspended',
+}
+
 @Schema({ timestamps: true })
 export class Organization {
   @Prop({ required: true, unique: true, trim: true })
   title!: string;
+
+  @Prop({ type: String, trim: true })
+  ownerName?: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   agentId!: Types.ObjectId;
@@ -21,6 +30,9 @@ export class Organization {
 
   @Prop({ type: Number, required: true })
   commissionAmount!: number;
+
+  @Prop({ type: String, enum: ORGANIZATION_STATUS, default: ORGANIZATION_STATUS.active })
+  status!: ORGANIZATION_STATUS;
 
   @Prop({ type: String, trim: true })
   logo?: string;

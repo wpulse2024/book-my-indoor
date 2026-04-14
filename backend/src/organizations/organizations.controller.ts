@@ -15,16 +15,24 @@ import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { CreateStaffDto } from './dto/create-staff.dto';
+import { SelfRegisterOrganizationDto } from './dto/self-register-organization.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermissions } from '../common/decorators/permissions.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { organizationLogoUploadOptions } from '../common/upload.config';
+import { Public } from '../common/decorators/public.decorator';
 
 @Controller('organizations')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class OrganizationsController {
   constructor(private readonly organizationsService: OrganizationsService) {}
+
+  @Post('register')
+  @Public()
+  selfRegister(@Body() dto: SelfRegisterOrganizationDto) {
+    return this.organizationsService.selfRegister(dto);
+  }
 
   @Post()
   @RequirePermissions('organizations:create')
@@ -66,6 +74,12 @@ export class OrganizationsController {
   @RequirePermissions('organizations:singleRead')
   findOne(@Param('id') id: string) {
     return this.organizationsService.findOne(id);
+  }
+
+  @Patch(':id/approve')
+  @RequirePermissions('organizations:update')
+  approve(@Param('id') id: string) {
+    return this.organizationsService.approve(id);
   }
 
   @Patch(':id')
