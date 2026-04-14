@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useWishlistStore } from '@/stores/wishlist.store'
 
 const props = defineProps<{
   slug: string
@@ -19,11 +20,18 @@ const props = defineProps<{
   dots?: number
 }>()
 
-const liked = ref(false)
 const router = useRouter()
+const wishlistStore = useWishlistStore()
+
+// slug === venue._id in this app
+const liked = computed(() => wishlistStore.isWishlisted(props.slug))
 
 function goToDetail() {
   router.push({ name: 'venue-detail', params: { slug: props.slug } })
+}
+
+function toggleWishlist() {
+  wishlistStore.toggle(props.slug)
 }
 </script>
 
@@ -57,9 +65,10 @@ function goToDetail() {
 
       <!-- Wishlist button -->
       <button
-        @click="liked = !liked"
+        @click.stop="toggleWishlist"
         class="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow transition-all"
         :class="liked ? 'bg-orange-500' : 'bg-white hover:bg-gray-50'"
+        :title="liked ? 'Remove from saved' : 'Save venue'"
       >
         <svg class="w-4 h-4" :class="liked ? 'text-white' : 'text-gray-400'" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>

@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
@@ -12,7 +13,10 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post('register')
   register(@Body() dto: RegisterDto) {
@@ -56,5 +60,25 @@ export class AuthController {
   @RequirePermissions('auth:loginAsUser')
   loginAsUser(@Param('userId') userId: string) {
     return this.authService.loginAsUser(userId);
+  }
+
+  // ── Wishlist ──────────────────────────────────────────────────────────────
+
+  @Get('wishlist')
+  @UseGuards(JwtAuthGuard)
+  getWishlist(@CurrentUser() user: any) {
+    return this.usersService.getWishlist(user._id.toString());
+  }
+
+  @Post('wishlist/:venueId')
+  @UseGuards(JwtAuthGuard)
+  addToWishlist(@CurrentUser() user: any, @Param('venueId') venueId: string) {
+    return this.usersService.addToWishlist(user._id.toString(), venueId);
+  }
+
+  @Delete('wishlist/:venueId')
+  @UseGuards(JwtAuthGuard)
+  removeFromWishlist(@CurrentUser() user: any, @Param('venueId') venueId: string) {
+    return this.usersService.removeFromWishlist(user._id.toString(), venueId);
   }
 }

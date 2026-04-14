@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import TheNavbar from '@/components/TheNavbar.vue'
 import AccountSidebar from '@/components/account/AccountSidebar.vue'
 import WalletCard from '@/components/account/WalletCard.vue'
@@ -7,6 +8,12 @@ import ActivityItem from '@/components/account/ActivityItem.vue'
 import SavedVenueCard from '@/components/account/SavedVenueCard.vue'
 import ReviewModal from '@/components/ReviewModal.vue'
 import { bookingApi, assetUrl } from '@/services/api'
+import { useAuthStore } from '@/stores/auth.store'
+import { useWishlistStore } from '@/stores/wishlist.store'
+
+const router = useRouter()
+const authStore = useAuthStore()
+const wishlistStore = useWishlistStore()
 
 // Real bookings from API
 const rawBookings = ref<any[]>([])
@@ -45,6 +52,10 @@ onMounted(async () => {
     bookingsError.value = err.response?.data?.message ?? 'Failed to load bookings'
   } finally {
     loadingBookings.value = false
+  }
+
+  if (authStore.isLoggedIn && !wishlistStore.initialized) {
+    wishlistStore.fetch()
   }
 })
 
@@ -85,22 +96,6 @@ const activities = [
   },
 ]
 
-const savedVenues = [
-  {
-    slug: 'the-grand-slam-center',
-    name: 'The Grand Slam Center',
-    rating: 4.9,
-    reviewCount: 210,
-    image: 'https://picsum.photos/seed/grand-slam/600/400',
-  },
-  {
-    slug: 'ping-pong-palace',
-    name: 'Ping Pong Palace',
-    rating: 4.7,
-    reviewCount: 89,
-    image: 'https://picsum.photos/seed/ping-pong/600/400',
-  },
-]
 </script>
 
 <template>
@@ -240,11 +235,51 @@ const savedVenues = [
             <!-- Saved Venues -->
             <div class="bg-white rounded-2xl border border-gray-100 p-6">
               <h2 class="font-black text-gray-900 text-lg mb-4">Saved Venues</h2>
-              <div class="space-y-3">
+
+              <!-- Not logged in -->
+              <div v-if="!authStore.isLoggedIn" class="text-center py-8">
+                <svg class="w-10 h-10 mx-auto mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                <p class="text-gray-400 text-sm font-semibold">Log in to save venues</p>
+                <button
+                  @click="router.push('/login')"
+                  class="mt-3 text-xs text-orange-500 font-black hover:underline"
+                >
+                  Sign In
+                </button>
+              </div>
+
+              <!-- Loading -->
+              <div v-else-if="wishlistStore.loading" class="space-y-3">
+                <div v-for="i in 2" :key="i" class="rounded-2xl bg-gray-100 animate-pulse" style="height: 140px;"></div>
+              </div>
+
+              <!-- Empty -->
+              <div v-else-if="wishlistStore.venues.length === 0" class="text-center py-8">
+                <svg class="w-10 h-10 mx-auto mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                <p class="text-gray-400 text-sm">No saved venues yet.</p>
+                <button
+                  @click="router.push('/discover')"
+                  class="mt-3 text-xs text-orange-500 font-black hover:underline"
+                >
+                  Browse Venues
+                </button>
+              </div>
+
+              <!-- List -->
+              <div v-else class="space-y-3">
                 <SavedVenueCard
-                  v-for="venue in savedVenues"
-                  :key="venue.slug"
-                  v-bind="venue"
+                  v-for="venue in wishlistStore.venues"
+                  :key="venue.venueId"
+                  :venue-id="venue.venueId"
+                  :slug="venue.slug"
+                  :name="venue.name"
+                  :rating="venue.rating"
+                  :review-count="venue.reviewCount"
+                  :image="venue.image"
                 />
               </div>
             </div>

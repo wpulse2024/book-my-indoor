@@ -34,6 +34,9 @@ export class User {
 
   @Prop({ default: true })
   isActive!: boolean;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Venue' }], default: [] })
+  wishlist!: Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

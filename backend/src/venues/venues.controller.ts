@@ -60,6 +60,12 @@ export class VenuesController {
     return this.venuesService.create(dto, imagePaths, dto.organizationId);
   }
 
+  // Public — platform-wide stats for the hero section
+  @Get('stats')
+  getStats() {
+    return this.venuesService.getStats();
+  }
+
   // Public — anyone can browse venues, optionally filter by status
   @Get()
   findAll(@Query() query: FindVenuesQueryDto) {

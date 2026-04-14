@@ -105,4 +105,28 @@ export class UsersService {
     const result = await this.userModel.findByIdAndDelete(id);
     if (!result) throw new NotFoundException('User not found');
   }
+
+  async getWishlist(userId: string): Promise<any[]> {
+    const user = await this.userModel
+      .findById(userId)
+      .populate('wishlist')
+      .lean()
+      .exec();
+    if (!user) throw new NotFoundException('User not found');
+    return (user as any).wishlist ?? [];
+  }
+
+  async addToWishlist(userId: string, venueId: string): Promise<{ wishlisted: boolean }> {
+    await this.userModel.findByIdAndUpdate(userId, {
+      $addToSet: { wishlist: venueId },
+    });
+    return { wishlisted: true };
+  }
+
+  async removeFromWishlist(userId: string, venueId: string): Promise<{ wishlisted: boolean }> {
+    await this.userModel.findByIdAndUpdate(userId, {
+      $pull: { wishlist: venueId },
+    });
+    return { wishlisted: false };
+  }
 }

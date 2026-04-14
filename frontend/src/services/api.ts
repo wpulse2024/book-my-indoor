@@ -306,6 +306,14 @@ export const agentSlotApi = {
     http.delete(`/venue-slots/${id}`),
 }
 
+// ─── Wishlist ────────────────────────────────────────────────────────────────
+
+export const wishlistApi = {
+  list: () => http.get<any[]>('/auth/wishlist'),
+  add: (venueId: string) => http.post<{ wishlisted: boolean }>(`/auth/wishlist/${venueId}`),
+  remove: (venueId: string) => http.delete<{ wishlisted: boolean }>(`/auth/wishlist/${venueId}`),
+}
+
 // ─── Agent Venue Management ───────────────────────────────────────────────────
 
 export const agentVenueApi = {

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Venue, VenueDocument, VenueStatus } from './schemas/venue.schema';
+import { Booking, BookingDocument } from '../bookings/schemas/booking.schema';
 import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
 import { FindVenuesQueryDto } from './dto/find-venues-query.dto';
@@ -11,7 +12,22 @@ export class VenuesService {
   constructor(
     @InjectModel(Venue.name)
     private readonly venueModel: Model<VenueDocument>,
+    @InjectModel(Booking.name)
+    private readonly bookingModel: Model<BookingDocument>,
   ) {}
+
+  async getStats(): Promise<{ venueCount: number; playerCount: number; cityCount: number }> {
+    const [venueCount, playerIds, locationTitles] = await Promise.all([
+      this.venueModel.countDocuments({ status: VenueStatus.ACTIVE }),
+      this.bookingModel.distinct('userId'),
+      this.venueModel.distinct('location.title'),
+    ]);
+    return {
+      venueCount,
+      playerCount: playerIds.length,
+      cityCount: locationTitles.length,
+    };
+  }
 
   create(dto: CreateVenueDto, imagePaths: string[], organizationId: string): Promise<VenueDocument> {
     return this.venueModel.create({ ...dto, images: imagePaths, organizationId });

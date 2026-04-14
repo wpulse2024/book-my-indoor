@@ -50,20 +50,18 @@ function openDatePicker() {
   }
 }
 
-// ── Real stats from /venues ───────────────────────────────────────────────────
-const statsLoading = ref(true)
-const venueCount   = ref(0)
-const avgRating    = ref(0)
+// ── Real stats from /venues/stats ────────────────────────────────────────────
+const statsLoading  = ref(true)
+const venueCount    = ref(0)
+const playerCount   = ref(0)
+const cityCount     = ref(0)
 
 onMounted(async () => {
   try {
-    const res = await http.get<any[]>('/venues')
-    const venues: any[] = Array.isArray(res.data) ? res.data : []
-    venueCount.value = venues.length
-    const rated = venues.filter(v => (v.rating ?? 0) > 0)
-    avgRating.value = rated.length
-      ? parseFloat((rated.reduce((sum, v) => sum + (v.rating ?? 0), 0) / rated.length).toFixed(1))
-      : 0
+    const res = await http.get<{ venueCount: number; playerCount: number; cityCount: number }>('/venues/stats')
+    venueCount.value  = res.data.venueCount
+    playerCount.value = res.data.playerCount
+    cityCount.value   = res.data.cityCount
   } catch {
     // keep zeros — don't crash the page
   } finally {
@@ -72,10 +70,14 @@ onMounted(async () => {
 })
 
 const displayVenueCount = computed(() =>
-  statsLoading.value ? '…' : venueCount.value > 0 ? `${venueCount.value}+` : '550+'
+  statsLoading.value ? '…' : venueCount.value > 0 ? `${venueCount.value}+` : '0'
 )
-const displayPlayers = computed(() => statsLoading.value ? '…' : '20K+')
-const displayCities  = computed(() => statsLoading.value ? '…' : '150+')
+const displayPlayers = computed(() =>
+  statsLoading.value ? '…' : playerCount.value > 0 ? `${playerCount.value}+` : '0'
+)
+const displayCities = computed(() =>
+  statsLoading.value ? '…' : cityCount.value > 0 ? `${cityCount.value}+` : '0'
+)
 </script>
 
 <template>
