@@ -8,7 +8,7 @@ const props = defineProps<{
   name: string
   location: string
   distance: string
-  price: number
+  price: number | null
   priceUnit?: string
   rating: number
   reviewCount: number
@@ -94,8 +94,9 @@ function toggleWishlist() {
       <div class="flex items-start justify-between gap-3 mb-1.5">
         <h3 class="font-black text-gray-900 text-base leading-snug">{{ name }}</h3>
         <div class="text-right flex-shrink-0">
-          <span class="text-blue-700 font-black text-xl">${{ price }}</span>
-          <p class="text-gray-400 text-xs">{{ priceUnit ?? 'per hour' }}</p>
+          <span v-if="price !== null" class="text-blue-700 font-black text-xl">${{ price }}</span>
+          <span v-else class="text-gray-400 font-semibold text-sm">No slots</span>
+          <p v-if="price !== null" class="text-gray-400 text-xs">{{ priceUnit ?? 'per slot' }}</p>
         </div>
       </div>
 

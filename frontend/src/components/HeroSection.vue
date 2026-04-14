@@ -107,7 +107,7 @@ const displayCities = computed(() =>
       <!-- Eyebrow badge -->
       <div class="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/25 rounded-full px-4 py-1.5 mb-8">
         <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
-        <span class="text-orange-400 text-xs font-bold uppercase tracking-widest">Dhaka's #1 Indoor Sports Platform</span>
+        <span class="text-orange-400 text-xs font-bold uppercase tracking-widest">Bangladesh's #1 Indoor Sports Platform</span>
       </div>
 
       <!-- Headline -->

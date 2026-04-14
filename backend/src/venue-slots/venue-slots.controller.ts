@@ -97,13 +97,29 @@ export class VenueSlotsController {
     return this.venueSlotsService.findPublicByVenue(venueId, date);
   }
 
-  // Public — returns venue IDs that have at least one available slot on a date (no auth)
+  // Public — returns venue IDs that have at least one available slot matching filters (no auth)
   @Get('public/venues')
-  findVenuesWithAvailability(@Query('date') date: string) {
-    if (!date) {
-      throw new BadRequestException('date is required');
+  findVenuesWithAvailability(
+    @Query('date') date?: string,
+    @Query('timeFrom') timeFrom?: string,
+    @Query('timeTo') timeTo?: string,
+    @Query('priceMax') priceMax?: string,
+  ) {
+    if (!date && !timeFrom && !timeTo && priceMax === undefined) {
+      throw new BadRequestException('At least one filter (date, timeFrom, timeTo, or priceMax) is required');
     }
-    return this.venueSlotsService.findVenueIdsWithAvailability(date);
+    return this.venueSlotsService.findVenueIdsWithAvailability(
+      date,
+      timeFrom,
+      timeTo,
+      priceMax !== undefined ? Number(priceMax) : undefined,
+    );
+  }
+
+  // Public — returns minimum slot price per venue (no auth)
+  @Get('public/min-prices')
+  getMinPricesPerVenue() {
+    return this.venueSlotsService.getMinPricesPerVenue();
   }
 
   @Get(':id')

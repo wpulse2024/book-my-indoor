@@ -1,8 +1,8 @@
-# BookMyIndoor — Project Plan & Claude Instructions
+# VenueHub — Project Plan & Claude Instructions
 
 ## Project Overview
 
-BookMyIndoor is a multi-tenant SaaS platform for discovering, managing, and booking indoor venues (sports turfs, badminton courts, futsal arenas, studios, etc.). It is **not** a WordPress plugin — it is a standalone web application with a REST API.
+VenueHub is a multi-tenant SaaS platform for discovering, managing, and booking indoor venues (sports turfs, badminton courts, futsal arenas, studios, etc.). It is **not** a WordPress plugin — it is a standalone web application with a REST API.
 
 **Three roles:** Super Admin (platform owner) → Indoor Owner (tenant/venue operator) → End User (customer)
 

@@ -2,7 +2,7 @@
   <footer class="border-t border-gray-100 py-8 px-6 mt-12">
     <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <p class="text-blue-700 font-extrabold text-lg italic mb-1">CourtKinetic</p>
+        <p class="text-blue-700 font-extrabold text-lg italic mb-1">VenueHub</p>
         <p class="text-gray-400 text-xs leading-relaxed max-w-xs">
           The world's most advanced indoor venue booking platform for high-performance athletes.
         </p>

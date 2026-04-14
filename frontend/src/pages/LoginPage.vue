@@ -96,14 +96,7 @@ async function continueWithPhone() {
   try {
     const res = await authApi.validateUser(normalizedPhone.value)
     otpLoginPreferred.value = res.data.isOtpLogin
-
-    if (res.data.isOtpLogin) {
-      await requestOtp()
-      return
-    }
-
     step.value = 'password'
-    infoMessage.value = 'Password login is available for this account.'
   } catch (cause) {
     error.value = getErrorMessage(cause, 'We could not find that user.')
   } finally {
@@ -224,14 +217,17 @@ onBeforeUnmount(() => {
 
         <div v-else-if="step === 'password'" class="login-card__body">
           <p class="login-card__eyebrow">Welcome back</p>
-          <h1 class="login-card__title">Password Login</h1>
-          <p class="login-card__subtitle">Enter your password to access your dashboard.</p>
+          <h1 class="login-card__title">Sign In</h1>
+          <p class="login-card__subtitle">
+            Signing in as <strong>{{ normalizedPhone }}</strong> &mdash;
+            <button class="login-form__link" type="button" @click="backToPhone">Change</button>
+          </p>
+
+          <p v-if="error" class="login-form__message login-form__message--error" style="margin-top:1.25rem;">{{ error }}</p>
+          <p v-else-if="infoMessage" class="login-form__message" style="margin-top:1.25rem;">{{ infoMessage }}</p>
 
           <form class="login-form" @submit.prevent="submitPassword">
-            <div class="login-form__meta">
-              <label class="login-form__label">Password</label>
-              <button class="login-form__link" type="button" @click="backToPhone">Change Number</button>
-            </div>
+            <label class="login-form__label">Password</label>
 
             <input
               v-model="password"
@@ -242,12 +238,8 @@ onBeforeUnmount(() => {
               autofocus
             />
 
-            <p class="login-form__hint">Signing in as {{ normalizedPhone }}</p>
-            <p v-if="error" class="login-form__message login-form__message--error">{{ error }}</p>
-            <p v-else-if="infoMessage" class="login-form__message">{{ infoMessage }}</p>
-
             <button class="login-form__primary" type="submit" :disabled="auth.isLoading">
-              {{ auth.isLoading ? 'Signing In...' : 'Sign In' }}
+              {{ auth.isLoading ? 'Signing In...' : 'Sign In with Password' }}
             </button>
           </form>
 
@@ -256,7 +248,7 @@ onBeforeUnmount(() => {
           </div>
 
           <button class="login-form__secondary" type="button" :disabled="isSubmitting" @click="requestOtp">
-            {{ isSubmitting ? 'Sending OTP...' : 'Login with OTP' }}
+            {{ isSubmitting ? 'Sending OTP...' : 'Sign In with OTP' }}
           </button>
         </div>
 

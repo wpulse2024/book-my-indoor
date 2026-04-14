@@ -46,7 +46,7 @@ onBeforeUnmount(()    => document.removeEventListener('mousedown', handleClickOu
       <!-- Logo + desktop nav -->
       <div class="flex items-center gap-8 lg:gap-10">
         <RouterLink to="/" class="text-blue-700 font-extrabold text-xl tracking-tight italic no-underline flex-shrink-0">
-          CourtKinetic
+          VenueHub
         </RouterLink>
 
         <div class="hidden md:flex items-center gap-6 lg:gap-7 text-sm font-medium">

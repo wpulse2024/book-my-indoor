@@ -38,7 +38,7 @@ if (auth.isLoggedIn) bookingStore.fetchWallet()
       <!-- Logo -->
       <RouterLink to="/" class="header__logo">
         <span class="header__logo-icon">⚽</span>
-        <span class="header__logo-text">BookMyIndoor</span>
+        <span class="header__logo-text">VenueHub</span>
       </RouterLink>
 
       <!-- Desktop nav -->

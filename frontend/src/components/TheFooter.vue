@@ -8,9 +8,9 @@ const email = ref('')
     <div class="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
       <!-- Brand -->
       <div>
-        <p class="text-white font-extrabold text-xl italic mb-3">CourtKinetic</p>
+        <p class="text-white font-extrabold text-xl italic mb-3">VenueHub</p>
         <p class="text-gray-500 text-xs leading-relaxed">
-          Dhaka's premier destination for high-velocity indoor sports booking. Built for the athlete in you.
+          Bangladesh's premier destination for high-velocity indoor sports booking. Built for the athlete in you.
         </p>
       </div>
 
@@ -74,7 +74,7 @@ const email = ref('')
     <!-- Bottom bar -->
     <div class="border-t border-gray-900 py-5 px-6 text-center">
       <p class="text-gray-700 text-xs uppercase tracking-widest">
-        © 2024 CourtKinetic. All Rights Reserved. Precision Engineered in Dhaka.
+        © 2024 VenueHub. All Rights Reserved. Precision Engineered in Dhaka.
       </p>
     </div>
   </footer>

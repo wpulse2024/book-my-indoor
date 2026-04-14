@@ -46,21 +46,28 @@ function initFromQuery() {
 watch(() => route.query, () => { initFromQuery() }, { deep: true })
 
 const allVenues = ref<any[]>([])
+const venueMinPrices = ref<Record<string, number>>({})
 const loading = ref(false)
 const error = ref('')
 
-// null = no date filter active; string[] = venue IDs that have slots on q.date
+// null = no slot-based filter active; string[] = venue IDs matching date/time/price
 const availableVenueIds = ref<string[] | null>(null)
 const slotsLoading = ref(false)
 
-async function fetchAvailableVenues(date: string) {
-  if (!date) {
+async function fetchFilteredVenueIds() {
+  const hasFilter = q.date || q.timeFrom || q.timeTo || q.priceMax !== null
+  if (!hasFilter) {
     availableVenueIds.value = null
     return
   }
   slotsLoading.value = true
   try {
-    const res = await http.get<string[]>('/venue-slots/public/venues', { params: { date } })
+    const params: Record<string, any> = {}
+    if (q.date) params.date = q.date
+    if (q.timeFrom) params.timeFrom = q.timeFrom
+    if (q.timeTo) params.timeTo = q.timeTo
+    if (q.priceMax !== null) params.priceMax = q.priceMax
+    const res = await http.get<string[]>('/venue-slots/public/venues', { params })
     availableVenueIds.value = Array.isArray(res.data) ? res.data : []
   } catch {
     availableVenueIds.value = null
@@ -69,7 +76,7 @@ async function fetchAvailableVenues(date: string) {
   }
 }
 
-watch(() => q.date, fetchAvailableVenues)
+watch([() => q.date, () => q.timeFrom, () => q.timeTo, () => q.priceMax], fetchFilteredVenueIds)
 
 // ─── Geolocation ──────────────────────────────────────────────────────────────
 const userLocation = ref<{ lat: number; lng: number } | null>(null)
@@ -97,8 +104,12 @@ async function fetchVenues() {
   loading.value = true
   error.value = ''
   try {
-    const res = await http.get<any[]>('/venues')
-    allVenues.value = res.data
+    const [venuesRes, pricesRes] = await Promise.all([
+      http.get<any[]>('/venues'),
+      http.get<Record<string, number>>('/venue-slots/public/min-prices'),
+    ])
+    allVenues.value = venuesRes.data
+    venueMinPrices.value = pricesRes.data ?? {}
   } catch (e: any) {
     error.value = e?.response?.data?.message ?? 'Failed to load venues.'
   } finally {
@@ -166,11 +177,8 @@ const filteredVenues = computed(() => {
     })
   }
 
-  // Price and time filtering by slot is no longer possible client-side
-  // (slots live in a separate collection). Filters are sent to server when API supports it.
-
-  // Date filter — keep only venues that have an available slot on that date
-  if (q.date && availableVenueIds.value !== null) {
+  // Slot-based filters (date, time, price) — resolved via API call
+  if (availableVenueIds.value !== null) {
     const ids = new Set(availableVenueIds.value)
     list = list.filter(v => ids.has((v._id ?? '').toString()))
   }
@@ -224,9 +232,7 @@ const typeGradients: Record<string, string> = {
 }
 
 function toCardProps(venue: any) {
-  // Price is no longer embedded in the venue; slots live in a separate collection.
-  // Show 0 here; actual prices are visible when users pick a date on the venue detail page.
-  const lowestPrice = 0
+  const lowestPrice = venueMinPrices.value[venue._id] ?? null
   const catKey = (venue.categoryId?.title ?? '').toLowerCase().replace(/\s+/g, '_')
 
   const distanceStr = (() => {
@@ -241,7 +247,7 @@ function toCardProps(venue: any) {
     location: venue.location?.title ?? '',
     distance: distanceStr,
     price: lowestPrice,
-    priceUnit: 'per slot',
+    priceUnit: lowestPrice !== null ? 'per slot' : undefined,
     rating: venue.rating ?? 0,
     reviewCount: 0,
     availability: null as null,
@@ -295,8 +301,8 @@ function toCardProps(venue: any) {
 
           <!-- Empty state -->
           <div v-else-if="!pagedVenues.length" class="text-center py-16 text-gray-400 text-sm">
-            <template v-if="q.date && availableVenueIds !== null && availableVenueIds.length === 0">
-              No venues have available slots on this date. Try a different date.
+            <template v-if="availableVenueIds !== null && availableVenueIds.length === 0">
+              No venues have available slots matching your filters. Try adjusting the date, time, or price.
             </template>
             <template v-else>
               No venues found. Try adjusting your filters.

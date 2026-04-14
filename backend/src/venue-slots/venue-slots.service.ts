@@ -150,18 +150,57 @@ export class VenueSlotsService {
       .exec() as unknown as VenueSlotDocument[];
   }
 
-  // ─── Public: venue IDs that have at least one available slot on a date ───────
+  // ─── Public: venue IDs that have at least one available slot matching filters ──
 
-  async findVenueIdsWithAvailability(date: string): Promise<string[]> {
-    const parsedDate = this.parseDate(date);
+  async findVenueIdsWithAvailability(
+    date?: string,
+    timeFrom?: string,
+    timeTo?: string,
+    priceMax?: number,
+  ): Promise<string[]> {
+    const filter: Record<string, any> = {
+      status: SlotStatus.PUBLISH,
+      bookingStatus: { $ne: BookingStatus.BOOKED },
+    };
+
+    if (date) {
+      filter.date = this.parseDate(date);
+    }
+
+    if (timeFrom || timeTo) {
+      filter.startTime = {};
+      if (timeFrom) filter.startTime.$gte = timeFrom;
+      if (timeTo) filter.startTime.$lt = timeTo;
+    }
+
+    if (priceMax !== undefined) {
+      filter.slotPrice = { $lte: priceMax };
+    }
+
     const ids = await this.venueSlotModel
-      .distinct('venueId', {
-        date: parsedDate,
-        status: SlotStatus.PUBLISH,
-        bookingStatus: { $ne: BookingStatus.BOOKED },
-      })
+      .distinct('venueId', filter)
       .exec();
     return (ids as any[]).map((id) => id.toString());
+  }
+
+  // ─── Public: minimum slot price per venue ───────────────────────────────────
+
+  async getMinPricesPerVenue(): Promise<Record<string, number>> {
+    const result = await this.venueSlotModel.aggregate([
+      {
+        $match: {
+          status: SlotStatus.PUBLISH,
+          bookingStatus: { $ne: BookingStatus.BOOKED },
+        },
+      },
+      {
+        $group: {
+          _id: '$venueId',
+          minPrice: { $min: '$slotPrice' },
+        },
+      },
+    ]);
+    return Object.fromEntries(result.map((r: any) => [r._id.toString(), r.minPrice]));
   }
 
   // ─── Queries ─────────────────────────────────────────────────────────────────

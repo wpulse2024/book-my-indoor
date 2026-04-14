@@ -6,7 +6,7 @@
         <div>
           <div class="footer__brand">
             <span class="footer__brand-icon">⚽</span>
-            <span class="footer__brand-name">BookMyIndoor</span>
+            <span class="footer__brand-name">VenueHub</span>
           </div>
           <p class="footer__tagline">Discover & book indoor sports venues near you — turfs, courts, studios and more.</p>
           <div class="footer__social">
@@ -52,7 +52,7 @@
       </div>
 
       <div class="footer__bottom">
-        <p>© {{ new Date().getFullYear() }} BookMyIndoor. All rights reserved.</p>
+        <p>© {{ new Date().getFullYear() }} VenueHub. All rights reserved.</p>
         <p class="footer__bottom-right">Made with ❤️ for sports lovers</p>
       </div>
     </div>

@@ -1,4 +1,4 @@
-# BookMyIndoor — SaaS Platform Proposal
+# VenueHub — SaaS Platform Proposal
 
 **A centralized platform for discovering, managing, and booking indoor venues**
 
@@ -6,7 +6,7 @@
 
 ## 1. Executive Summary
 
-BookMyIndoor is a multi-tenant SaaS platform that connects sports turf owners, studio operators, and indoor court managers with end users who want to discover and book venues near them. The platform operates on a three-tier model: a Super Admin who owns and operates the SaaS, Indoor Owners (tenants) who manage their venues and staff, and End Users who browse and book.
+VenueHub is a multi-tenant SaaS platform that connects sports turf owners, studio operators, and indoor court managers with end users who want to discover and book venues near them. The platform operates on a three-tier model: a Super Admin who owns and operates the SaaS, Indoor Owners (tenants) who manage their venues and staff, and End Users who browse and book.
 
 The core value proposition is a unified booking infrastructure that venue owners can subscribe to instead of building their own — similar to how Shopify works for e-commerce.
 
@@ -200,4 +200,4 @@ SaaS Platform
 
 ## 13. Conclusion
 
-BookMyIndoor fills a clear gap in the indoor venue management space. By providing a ready-to-use SaaS infrastructure, venue owners avoid the cost of custom development while users get a consistent, reliable booking experience. The platform is designed to scale from a single-city launch to a nationwide marketplace, with a monetization model that grows alongside tenant success.
+VenueHub fills a clear gap in the indoor venue management space. By providing a ready-to-use SaaS infrastructure, venue owners avoid the cost of custom development while users get a consistent, reliable booking experience. The platform is designed to scale from a single-city launch to a nationwide marketplace, with a monetization model that grows alongside tenant success.

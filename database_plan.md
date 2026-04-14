@@ -1,4 +1,4 @@
-# BookMyIndoor — Complete Data Structure Reference
+# VenueHub — Complete Data Structure Reference
 
 All collections use **MongoDB** via **Mongoose**. Timestamps (`createdAt`, `updatedAt`) are automatic on all collections unless noted.
 
